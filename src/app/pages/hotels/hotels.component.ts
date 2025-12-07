@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, OnInit, ViewChild, AfterViewInit, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {HotelService} from '../../services/hotel.service';
 import {HotelModel, HotelType} from '../../services/model/hotel.model';
@@ -11,6 +11,8 @@ import {FormsModule} from '@angular/forms';
 import {IconComponent} from '../../components/icons/icons.component';
 import {FilterModel} from '../../services/base/models/filter/filter.model';
 import {FieldType} from '../../services/base/models/filter/field.type';
+import * as L from 'leaflet';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-hotels',
@@ -19,7 +21,7 @@ import {FieldType} from '../../services/base/models/filter/field.type';
   templateUrl: './hotels.component.html',
   styleUrl: './hotels.component.css'
 })
-export class HotelsComponent implements OnInit {
+export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   hotels: HotelModel[] = [];
   isModalOpen = false;
@@ -28,6 +30,12 @@ export class HotelsComponent implements OnInit {
   isEditMode = false;
   isDeleteModalOpen = false;
   hotelToDelete: HotelModel | null = null;
+
+  // Map properties
+  @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
+  map: L.Map | null = null;
+  marker: L.Marker | null = null;
+  isMapLoading = false;
 
   // Available options for dropdowns
   allAmenities: AmenityModel[] = [];
@@ -51,7 +59,8 @@ export class HotelsComponent implements OnInit {
   constructor(
     private hotelService: HotelService,
     private amenityService: AmenityService,
-    private roomTypeService: RoomTypeService
+    private roomTypeService: RoomTypeService,
+    private http: HttpClient
   ) {
   }
 
@@ -59,6 +68,16 @@ export class HotelsComponent implements OnInit {
     this.loadHotels();
     this.loadAllAmenities();
     this.loadAllRoomTypes();
+  }
+
+  ngAfterViewInit() {
+    // Map will be initialized when modal opens
+  }
+
+  ngOnDestroy() {
+    if (this.map) {
+      this.map.remove();
+    }
   }
 
   loadHotels() {
@@ -188,6 +207,7 @@ export class HotelsComponent implements OnInit {
     };
     this.modalTitle = 'Add Hotel';
     this.isModalOpen = true;
+    setTimeout(() => this.initMap(), 100);
   }
 
   getDaysOffString(): string {
@@ -205,6 +225,7 @@ export class HotelsComponent implements OnInit {
     this.selectedHotel = {...hotel};
     this.modalTitle = 'Hotel Details';
     this.isModalOpen = true;
+    setTimeout(() => this.initMap(), 100);
   }
 
   openEditModal(hotel: HotelModel) {
@@ -212,11 +233,17 @@ export class HotelsComponent implements OnInit {
     this.selectedHotel = {...hotel};
     this.modalTitle = 'Edit Hotel';
     this.isModalOpen = true;
+    setTimeout(() => this.initMap(), 100);
   }
 
   closeModal() {
     this.isModalOpen = false;
     this.selectedHotel = null;
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+      this.marker = null;
+    }
   }
 
   saveHotel() {
@@ -315,6 +342,141 @@ export class HotelsComponent implements OnInit {
 
   get HotelType() {
     return HotelType;
+  }
+
+  initMap() {
+    if (!this.mapContainer || !this.selectedHotel) return;
+
+    // Remove existing map if any
+    if (this.map) {
+      this.map.remove();
+    }
+
+    // Fix Leaflet default icon paths - use CDN or default paths
+    const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+    const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+    const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+    
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: iconRetinaUrl,
+      iconUrl: iconUrl,
+      shadowUrl: shadowUrl,
+    });
+
+    // Determine center and zoom based on hotel coordinates
+    const hasValidCoordinates = this.selectedHotel.latitude && this.selectedHotel.longitude && 
+      this.selectedHotel.latitude !== 0 && this.selectedHotel.longitude !== 0;
+    
+    const defaultLat = hasValidCoordinates 
+      ? this.selectedHotel.latitude 
+      : 51.505;
+    const defaultLng = hasValidCoordinates 
+      ? this.selectedHotel.longitude 
+      : -0.09;
+    
+    // Use appropriate zoom level: closer zoom for view mode with valid coordinates
+    const defaultZoom = hasValidCoordinates 
+      ? (this.isEditMode ? 13 : 15)  // Closer zoom in view mode to show location clearly
+      : 2;
+
+    // Initialize map
+    this.map = L.map(this.mapContainer.nativeElement, {
+      center: [defaultLat, defaultLng],
+      zoom: defaultZoom,
+      zoomControl: true
+    });
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Add marker if coordinates exist (always show marker in view mode if coordinates exist)
+    if (hasValidCoordinates) {
+      this.marker = L.marker([this.selectedHotel.latitude, this.selectedHotel.longitude])
+        .addTo(this.map);
+      
+      // In view mode, ensure map is centered on marker
+      if (!this.isEditMode) {
+        this.map.setView([this.selectedHotel.latitude, this.selectedHotel.longitude], 15);
+      }
+    }
+
+    // Add click handler only in edit mode
+    if (this.isEditMode) {
+      this.map.on('click', (e: L.LeafletMouseEvent) => {
+        this.onMapClick(e.latlng.lat, e.latlng.lng);
+      });
+    }
+  }
+
+  onMapClick(lat: number, lng: number) {
+    if (!this.selectedHotel) return;
+
+    // Update coordinates
+    this.selectedHotel.latitude = lat;
+    this.selectedHotel.longitude = lng;
+
+    // Update or create marker
+    if (this.marker) {
+      this.marker.setLatLng([lat, lng]);
+    } else {
+      this.marker = L.marker([lat, lng]).addTo(this.map!);
+    }
+
+    // Center map on clicked location
+    this.map!.setView([lat, lng], 13);
+
+    // Reverse geocode to get address details
+    this.reverseGeocode(lat, lng);
+  }
+
+  reverseGeocode(lat: number, lng: number) {
+    if (!this.selectedHotel) return;
+
+    this.isMapLoading = true;
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+
+    this.http.get<any>(url, {
+      headers: {
+        'User-Agent': 'HotelAdmin/1.0'
+      }
+    }).subscribe({
+      next: (data) => {
+        this.isMapLoading = false;
+        if (data && data.address) {
+          const addr = data.address;
+
+          // Fill address fields
+          this.selectedHotel!.country = addr.country || '';
+          this.selectedHotel!.state = addr.state || addr.region || addr.province || '';
+          this.selectedHotel!.district = addr.city_district || addr.district || addr.suburb || '';
+          this.selectedHotel!.house = addr.house_number || addr.house_name || '';
+          this.selectedHotel!.postalCode = addr.postcode || '';
+          
+          // Build full address
+          const addressParts: string[] = [];
+          if (addr.road) addressParts.push(addr.road);
+          if (addr.house_number) addressParts.push(addr.house_number);
+          if (addr.city_district || addr.district) addressParts.push(addr.city_district || addr.district);
+          if (addr.city || addr.town || addr.village) addressParts.push(addr.city || addr.town || addr.village);
+          
+          this.selectedHotel!.address = addressParts.length > 0 
+            ? addressParts.join(', ') 
+            : data.display_name || '';
+        } else {
+          // Fallback to display_name if address structure is different
+          this.selectedHotel!.address = data.display_name || '';
+        }
+      },
+      error: (err) => {
+        this.isMapLoading = false;
+        console.error('Error reverse geocoding:', err);
+        // Still update coordinates even if geocoding fails
+      }
+    });
   }
 }
 

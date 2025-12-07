@@ -156,6 +156,30 @@
             class="form-input">
         </div>
       </div>
+      <!-- Map Selector/Display -->
+      <div class="form-group" *ngIf="isEditMode || (!isEditMode && modalTitle === 'Hotel Details')">
+        <label *ngIf="isEditMode">Select Location on Map</label>
+        <label *ngIf="!isEditMode && modalTitle === 'Hotel Details'">Location</label>
+        <div class="map-container-wrapper">
+          <div #mapContainer class="map-container"></div>
+          <div *ngIf="isMapLoading" class="map-loading">
+            <span>Loading address details...</span>
+          </div>
+        </div>
+        <div class="map-hint" *ngIf="isEditMode">
+          <app-icon name="info" size="14" fill="#6b7280"></app-icon>
+          <span>Click on the map to select a location. Address fields will be automatically filled.</span>
+        </div>
+        <div class="map-hint" *ngIf="!isEditMode && modalTitle === 'Hotel Details' && selectedHotel && selectedHotel.latitude && selectedHotel.longitude">
+          <app-icon name="info" size="14" fill="#6b7280"></app-icon>
+          <span>Hotel location: {{ selectedHotel.latitude | number:'1.6-6' }}, {{ selectedHotel.longitude | number:'1.6-6' }}</span>
+        </div>
+        <div class="map-hint" *ngIf="!isEditMode && modalTitle === 'Hotel Details' && (!selectedHotel || !selectedHotel.latitude || !selectedHotel.longitude)">
+          <app-icon name="info" size="14" fill="#6b7280"></app-icon>
+          <span>No location coordinates available for this hotel.</span>
+        </div>
+      </div>
+
       <div class="form-group">
         <label>Address <span class="required">*</span></label>
         <input
