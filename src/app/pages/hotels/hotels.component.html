@@ -270,32 +270,165 @@
           class="form-input"
           placeholder="e.g., Monday, Tuesday">
       </div>
+      <!-- Amenities Multi-Select -->
       <div class="form-group" *ngIf="isEditMode || modalTitle === 'Hotel Details'">
-        <label>Amenities</label>
-        <div class="checkbox-group">
-          <label *ngFor="let amenity of allAmenities" class="checkbox-label">
-            <input
-              type="checkbox"
-              [checked]="isAmenitySelected(amenity)"
-              (change)="toggleAmenity(amenity)"
-              [disabled]="!isEditMode && modalTitle === 'Hotel Details'"
-              class="checkbox-input">
+        <label>Amenities <span class="selected-count" *ngIf="selectedHotel && selectedHotel.amenities">({{ selectedHotel.amenities.length }})</span></label>
+        
+        <!-- Selected Amenities Display -->
+        <div class="selected-items-container" *ngIf="selectedHotel && selectedHotel.amenities && selectedHotel.amenities.length > 0; else noAmenitiesSelected">
+          <div *ngFor="let amenity of selectedHotel.amenities" class="selected-item-badge">
             <span>{{ amenity.name }}</span>
-          </label>
+            <button 
+              *ngIf="isEditMode"
+              type="button"
+              class="badge-remove-btn"
+              (click)="removeAmenity(amenity)"
+              aria-label="Remove amenity">
+              <app-icon name="close" size="12" fill="#6b7280"></app-icon>
+            </button>
+          </div>
+        </div>
+        <ng-template #noAmenitiesSelected>
+          <div class="no-items-message" *ngIf="isEditMode">No amenities selected. Use the dropdown below to add amenities.</div>
+          <div class="no-items-message" *ngIf="!isEditMode">No amenities selected.</div>
+        </ng-template>
+
+        <!-- Multi-Select Dropdown (only in edit mode) -->
+        <div class="multi-select-wrapper" *ngIf="isEditMode" #amenityDropdown>
+          <div 
+            class="multi-select-trigger"
+            (click)="toggleAmenityDropdown()"
+            [class.open]="isAmenityDropdownOpen">
+            <span class="multi-select-placeholder">
+              {{ amenitySearchQuery ? 'Searching...' : 'Search and select amenities' }}
+            </span>
+            <app-icon
+              name="chevron-down"
+              size="16"
+              [className]="isAmenityDropdownOpen ? 'multi-select-chevron rotated' : 'multi-select-chevron'">
+            </app-icon>
+          </div>
+          <div class="multi-select-dropdown" [class.open]="isAmenityDropdownOpen">
+            <!-- Search Input -->
+            <div class="multi-select-search">
+              <app-icon name="search" size="16" fill="#6b7280"></app-icon>
+              <input
+                type="text"
+                class="multi-select-search-input"
+                placeholder="Search amenities..."
+                [(ngModel)]="amenitySearchQuery"
+                (click)="$event.stopPropagation()"
+                (focus)="isAmenityDropdownOpen = true">
+            </div>
+            <!-- Amenities List -->
+            <div class="multi-select-options">
+              <div 
+                *ngFor="let amenity of getFilteredAmenities()"
+                class="multi-select-option"
+                [class.selected]="isAmenitySelected(amenity)"
+                (click)="toggleAmenity(amenity)">
+                <div class="multi-select-option-content">
+                  <input
+                    type="checkbox"
+                    [checked]="isAmenitySelected(amenity)"
+                    (change)="toggleAmenity(amenity)"
+                    (click)="$event.stopPropagation()"
+                    class="multi-select-checkbox">
+                  <span class="multi-select-option-label">{{ amenity.name }}</span>
+                </div>
+                <app-icon
+                  *ngIf="isAmenitySelected(amenity)"
+                  name="check-circle"
+                  size="16"
+                  fill="#14b8a6">
+                </app-icon>
+              </div>
+              <div *ngIf="getFilteredAmenities().length === 0" class="multi-select-no-results">
+                No amenities found
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Room Types Multi-Select -->
       <div class="form-group" *ngIf="isEditMode || modalTitle === 'Hotel Details'">
-        <label>Room Types</label>
-        <div class="checkbox-group">
-          <label *ngFor="let roomType of allRoomTypes" class="checkbox-label">
-            <input
-              type="checkbox"
-              [checked]="isRoomTypeSelected(roomType)"
-              (change)="toggleRoomType(roomType)"
-              [disabled]="!isEditMode && modalTitle === 'Hotel Details'"
-              class="checkbox-input">
+        <label>Room Types <span class="selected-count" *ngIf="selectedHotel && selectedHotel.roomTypes">({{ selectedHotel.roomTypes.length }})</span></label>
+        
+        <!-- Selected Room Types Display -->
+        <div class="selected-items-container" *ngIf="selectedHotel && selectedHotel.roomTypes && selectedHotel.roomTypes.length > 0; else noRoomTypesSelected">
+          <div *ngFor="let roomType of selectedHotel.roomTypes" class="selected-item-badge">
             <span>{{ roomType.name }}</span>
-          </label>
+            <button 
+              *ngIf="isEditMode"
+              type="button"
+              class="badge-remove-btn"
+              (click)="removeRoomType(roomType)"
+              aria-label="Remove room type">
+              <app-icon name="close" size="12" fill="#6b7280"></app-icon>
+            </button>
+          </div>
+        </div>
+        <ng-template #noRoomTypesSelected>
+          <div class="no-items-message" *ngIf="isEditMode">No room types selected. Use the dropdown below to add room types.</div>
+          <div class="no-items-message" *ngIf="!isEditMode">No room types selected.</div>
+        </ng-template>
+
+        <!-- Multi-Select Dropdown (only in edit mode) -->
+        <div class="multi-select-wrapper" *ngIf="isEditMode" #roomTypeDropdown>
+          <div 
+            class="multi-select-trigger"
+            (click)="toggleRoomTypeDropdown()"
+            [class.open]="isRoomTypeDropdownOpen">
+            <span class="multi-select-placeholder">
+              {{ roomTypeSearchQuery ? 'Searching...' : 'Search and select room types' }}
+            </span>
+            <app-icon
+              name="chevron-down"
+              size="16"
+              [className]="isRoomTypeDropdownOpen ? 'multi-select-chevron rotated' : 'multi-select-chevron'">
+            </app-icon>
+          </div>
+          <div class="multi-select-dropdown" [class.open]="isRoomTypeDropdownOpen">
+            <!-- Search Input -->
+            <div class="multi-select-search">
+              <app-icon name="search" size="16" fill="#6b7280"></app-icon>
+              <input
+                type="text"
+                class="multi-select-search-input"
+                placeholder="Search room types..."
+                [(ngModel)]="roomTypeSearchQuery"
+                (click)="$event.stopPropagation()"
+                (focus)="isRoomTypeDropdownOpen = true">
+            </div>
+            <!-- Room Types List -->
+            <div class="multi-select-options">
+              <div 
+                *ngFor="let roomType of getFilteredRoomTypes()"
+                class="multi-select-option"
+                [class.selected]="isRoomTypeSelected(roomType)"
+                (click)="toggleRoomType(roomType)">
+                <div class="multi-select-option-content">
+                  <input
+                    type="checkbox"
+                    [checked]="isRoomTypeSelected(roomType)"
+                    (change)="toggleRoomType(roomType)"
+                    (click)="$event.stopPropagation()"
+                    class="multi-select-checkbox">
+                  <span class="multi-select-option-label">{{ roomType.name }}</span>
+                </div>
+                <app-icon
+                  *ngIf="isRoomTypeSelected(roomType)"
+                  name="check-circle"
+                  size="16"
+                  fill="#14b8a6">
+                </app-icon>
+              </div>
+              <div *ngIf="getFilteredRoomTypes().length === 0" class="multi-select-no-results">
+                No room types found
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div *ngIf="isEditMode || modalTitle === 'Hotel Details'" class="form-actions">

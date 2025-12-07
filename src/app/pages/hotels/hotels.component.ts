@@ -42,6 +42,17 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
   allRoomTypes: RoomTypeModel[] = [];
   hotelTypes = Object.keys(HotelType).filter(key => isNaN(Number(key)));
 
+  // Multi-select properties for Amenities
+  amenitySearchQuery: string = '';
+  isAmenityDropdownOpen: boolean = false;
+
+  // Multi-select properties for Room Types
+  roomTypeSearchQuery: string = '';
+  isRoomTypeDropdownOpen: boolean = false;
+
+  @ViewChild('amenityDropdown', {static: false}) amenityDropdown?: ElementRef;
+  @ViewChild('roomTypeDropdown', {static: false}) roomTypeDropdown?: ElementRef;
+
   // Filter values
   searchQuery: string = '';
   filterPhoneNumber: string = '';
@@ -207,6 +218,11 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     };
     this.modalTitle = 'Add Hotel';
     this.isModalOpen = true;
+    // Reset multi-select states
+    this.amenitySearchQuery = '';
+    this.roomTypeSearchQuery = '';
+    this.closeAmenityDropdown();
+    this.closeRoomTypeDropdown();
     setTimeout(() => this.initMap(), 100);
   }
 
@@ -225,6 +241,11 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedHotel = {...hotel};
     this.modalTitle = 'Hotel Details';
     this.isModalOpen = true;
+    // Reset multi-select states
+    this.amenitySearchQuery = '';
+    this.roomTypeSearchQuery = '';
+    this.closeAmenityDropdown();
+    this.closeRoomTypeDropdown();
     setTimeout(() => this.initMap(), 100);
   }
 
@@ -233,6 +254,11 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedHotel = {...hotel};
     this.modalTitle = 'Edit Hotel';
     this.isModalOpen = true;
+    // Reset multi-select states
+    this.amenitySearchQuery = '';
+    this.roomTypeSearchQuery = '';
+    this.closeAmenityDropdown();
+    this.closeRoomTypeDropdown();
     setTimeout(() => this.initMap(), 100);
   }
 
@@ -244,6 +270,11 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map = null;
       this.marker = null;
     }
+    // Reset multi-select states
+    this.closeAmenityDropdown();
+    this.closeRoomTypeDropdown();
+    this.amenitySearchQuery = '';
+    this.roomTypeSearchQuery = '';
   }
 
   saveHotel() {
@@ -321,6 +352,33 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.selectedHotel.amenities.some(a => a.id === amenity.id);
   }
 
+  removeAmenity(amenity: AmenityModel) {
+    if (!this.selectedHotel) return;
+    const index = this.selectedHotel.amenities.findIndex(a => a.id === amenity.id);
+    if (index >= 0) {
+      this.selectedHotel.amenities.splice(index, 1);
+    }
+  }
+
+  toggleAmenityDropdown() {
+    this.isAmenityDropdownOpen = !this.isAmenityDropdownOpen;
+  }
+
+  closeAmenityDropdown() {
+    this.isAmenityDropdownOpen = false;
+  }
+
+  getFilteredAmenities(): AmenityModel[] {
+    if (!this.amenitySearchQuery) {
+      return this.allAmenities;
+    }
+    const query = this.amenitySearchQuery.toLowerCase();
+    return this.allAmenities.filter(amenity =>
+      amenity.name.toLowerCase().includes(query) ||
+      (amenity.code && amenity.code.toLowerCase().includes(query))
+    );
+  }
+
   toggleRoomType(roomType: RoomTypeModel) {
     if (!this.selectedHotel) return;
     const index = this.selectedHotel.roomTypes.findIndex(rt => rt.id === roomType.id);
@@ -334,6 +392,42 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
   isRoomTypeSelected(roomType: RoomTypeModel): boolean {
     if (!this.selectedHotel) return false;
     return this.selectedHotel.roomTypes.some(rt => rt.id === roomType.id);
+  }
+
+  removeRoomType(roomType: RoomTypeModel) {
+    if (!this.selectedHotel) return;
+    const index = this.selectedHotel.roomTypes.findIndex(rt => rt.id === roomType.id);
+    if (index >= 0) {
+      this.selectedHotel.roomTypes.splice(index, 1);
+    }
+  }
+
+  toggleRoomTypeDropdown() {
+    this.isRoomTypeDropdownOpen = !this.isRoomTypeDropdownOpen;
+  }
+
+  closeRoomTypeDropdown() {
+    this.isRoomTypeDropdownOpen = false;
+  }
+
+  getFilteredRoomTypes(): RoomTypeModel[] {
+    if (!this.roomTypeSearchQuery) {
+      return this.allRoomTypes;
+    }
+    const query = this.roomTypeSearchQuery.toLowerCase();
+    return this.allRoomTypes.filter(roomType =>
+      roomType.name.toLowerCase().includes(query)
+    );
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.amenityDropdown && !this.amenityDropdown.nativeElement.contains(event.target)) {
+      this.closeAmenityDropdown();
+    }
+    if (this.roomTypeDropdown && !this.roomTypeDropdown.nativeElement.contains(event.target)) {
+      this.closeRoomTypeDropdown();
+    }
   }
 
   getHotelTypeLabel(type: HotelType): string {
