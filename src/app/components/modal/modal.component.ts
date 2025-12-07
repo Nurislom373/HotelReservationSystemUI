@@ -14,10 +14,8 @@ export class ModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() title: string = '';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Output() close = new EventEmitter<void>();
-  
+
   @ViewChild('modalContent', { static: false }) modalContent!: ElementRef;
-  @ViewChild('firstFocusable', { static: false }) firstFocusable!: ElementRef;
-  @ViewChild('lastFocusable', { static: false }) lastFocusable!: ElementRef;
 
   private focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
