@@ -1,0 +1,156 @@
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-container">
+      <div class="logo-icon">
+        <app-icon name="bed" size="20" fill="white"></app-icon>
+      </div>
+      <div class="logo-text">
+        <h2>HotelAdmin</h2>
+        <p>Management Panel</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-menu">
+    <div class="menu-section">
+      <h3 class="menu-title">MAIN MENU</h3>
+      <nav class="nav-items">
+        <a
+          *ngFor="let item of navItems"
+          [routerLink]="item.route"
+          [class.active]="isActive(item.route)"
+          class="nav-item">
+          <app-icon [name]="item.icon" size="18" className="nav-icon"></app-icon>
+          <span>{{ item.label }}</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="menu-section">
+      <button
+        class="collapsible-header"
+        (click)="toggleUserManagement()"
+        type="button"
+        [attr.aria-expanded]="isUserManagementOpen">
+        <div class="collapsible-header-content">
+          <app-icon name="users" size="18" className="nav-icon"></app-icon>
+          <span>User Management</span>
+        </div>
+        <app-icon
+          name="chevron-down"
+          size="16"
+          className="collapsible-chevron"
+          [class.rotated]="isUserManagementOpen"></app-icon>
+      </button>
+      <div class="collapsible-content" [class.open]="isUserManagementOpen">
+        <nav class="nav-items">
+          <a
+            routerLink="/users"
+            [class.active]="isActive('/users')"
+            class="nav-item nav-item-sub">
+            <app-icon name="user" size="18" className="nav-icon"></app-icon>
+            <span>Users</span>
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <button
+        class="collapsible-header"
+        (click)="toggleHotelManagement()"
+        type="button"
+        [attr.aria-expanded]="isHotelManagementOpen">
+        <div class="collapsible-header-content">
+          <app-icon name="bed" size="18" className="nav-icon"></app-icon>
+          <span>Hotel Management</span>
+        </div>
+        <app-icon
+          name="chevron-down"
+          size="16"
+          className="collapsible-chevron"
+          [class.rotated]="isHotelManagementOpen"></app-icon>
+      </button>
+      <div class="collapsible-content" [class.open]="isHotelManagementOpen">
+        <nav class="nav-items">
+          <a
+            routerLink="/amenities"
+            [class.active]="isActive('/amenities')"
+            class="nav-item nav-item-sub">
+            <app-icon name="star" size="18" className="nav-icon"></app-icon>
+            <span>Amenities</span>
+          </a>
+          <a
+            routerLink="/hotels"
+            [class.active]="isActive('/hotels')"
+            class="nav-item nav-item-sub">
+            <app-icon name="bed" size="18" className="nav-icon"></app-icon>
+            <span>Hotels</span>
+          </a>
+          <a
+            routerLink="/room-types"
+            [class.active]="isActive('/room-types')"
+            class="nav-item nav-item-sub">
+            <app-icon name="home" size="18" className="nav-icon"></app-icon>
+            <span>Room Types</span>
+          </a>
+          <a
+            routerLink="/rooms-crud"
+            [class.active]="isActive('/rooms-crud')"
+            class="nav-item nav-item-sub">
+            <app-icon name="home" size="18" className="nav-icon"></app-icon>
+            <span>Rooms</span>
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-section mt-auto pb-4 border-t border-gray-700/50 pt-4">
+    <button
+      #profileButton
+      class="profile-button"
+      (click)="toggleDropdown()"
+      type="button"
+      [attr.aria-expanded]="isDropdownOpen"
+      aria-haspopup="true">
+      <div class="profile-avatar">
+        <app-icon name="user" size="18" fill="white"></app-icon>
+      </div>
+      <span class="profile-username">{{ username || 'User' }}</span>
+      <app-icon
+        name="chevron-down"
+        size="16"
+        className="profile-chevron"
+        [class.rotated]="isDropdownOpen"></app-icon>
+    </button>
+
+    <div
+      #profileDropdown
+      class="profile-dropdown"
+      [class.open]="isDropdownOpen">
+      <button
+        class="dropdown-item"
+        (click)="navigateToProfile()"
+        type="button">
+        <app-icon name="user" size="18" className="dropdown-icon"></app-icon>
+        <span>Profile</span>
+      </button>
+      <button
+        class="dropdown-item"
+        (click)="navigateToSettings()"
+        type="button">
+        <app-icon name="settings" size="18" className="dropdown-icon"></app-icon>
+        <span>Settings</span>
+      </button>
+      <button
+        class="dropdown-item dropdown-item-logout"
+        (click)="logout()"
+        type="button">
+        <app-icon name="logout" size="18" className="dropdown-icon"></app-icon>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+</div>
+

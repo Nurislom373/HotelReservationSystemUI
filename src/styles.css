@@ -1,0 +1,238 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 400;
+}
+
+/* Custom Select Styling */
+@layer components {
+  .custom-select {
+    @apply w-full px-3 py-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg;
+    @apply focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500;
+    @apply appearance-none cursor-pointer;
+    @apply transition-colors duration-200;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .custom-select:hover {
+    @apply border-gray-400;
+  }
+
+  .custom-select:focus {
+    @apply border-teal-500;
+  }
+
+  .custom-select:disabled {
+    @apply bg-gray-50 cursor-not-allowed opacity-60;
+  }
+
+  .custom-select.error {
+    @apply border-red-500;
+  }
+
+  .custom-select.error:focus {
+    @apply border-red-500 ring-red-500;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  /* Reusable Filter Container Styles */
+  .filter-container {
+    @apply flex items-center gap-3 mb-6 px-4 py-3 bg-white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .filter-container app-icon {
+    @apply flex items-center flex-shrink-0;
+  }
+
+  /* Filter Input Styles */
+  .filter-input {
+    @apply flex-1 px-3 py-2 text-sm font-normal text-gray-700 bg-white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .filter-input::placeholder {
+    @apply text-gray-400;
+  }
+
+  .filter-input:focus {
+    @apply outline-none;
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+
+  .filter-input:hover:not(:focus) {
+    border-color: #9ca3af;
+  }
+
+  /* Filter Select Styles */
+  .filter-select {
+    @apply px-3 py-2 text-sm font-normal text-gray-700 bg-white;
+    @apply appearance-none cursor-pointer;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    min-width: 140px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .filter-select:hover:not(:focus) {
+    border-color: #9ca3af;
+  }
+
+  .filter-select:focus {
+    @apply outline-none;
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+
+  /* Filter Icon Wrapper */
+  .filter-icon {
+    @apply flex items-center justify-center flex-shrink-0;
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Custom Filter Dropdown - Reusable across all pages */
+  .filter-dropdown-wrapper {
+    position: relative;
+    min-width: 140px;
+  }
+
+  .filter-dropdown-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #374151;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    gap: 8px;
+  }
+
+  .filter-dropdown-button:hover {
+    border-color: #9ca3af;
+  }
+
+  .filter-dropdown-button:focus {
+    outline: none;
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+  }
+
+  .filter-dropdown-text {
+    flex: 1;
+    text-align: left;
+  }
+
+  .filter-dropdown-chevron {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    color: #6b7280;
+  }
+
+  .filter-dropdown-chevron.rotated {
+    transform: rotate(180deg);
+  }
+
+  .filter-dropdown-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    overflow: hidden;
+    min-width: 100%;
+    margin-top: 4px;
+  }
+
+  .filter-dropdown-panel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .filter-dropdown-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-align: left;
+    gap: 8px;
+  }
+
+  .filter-dropdown-option:hover {
+    background: #f3f4f6;
+  }
+
+  .filter-dropdown-option:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+
+  .filter-dropdown-option:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+
+  .filter-dropdown-option.selected {
+    background: #3b82f6;
+    color: white;
+    font-weight: 500;
+  }
+
+  .filter-dropdown-option.selected:hover {
+    background: #2563eb;
+  }
+}

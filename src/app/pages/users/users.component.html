@@ -1,0 +1,456 @@
+<div class="users-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Users</h1>
+      <p class="page-subtitle">Manage system users and their permissions.</p>
+    </div>
+    <button class="btn-add" (click)="openAddModal()">
+      <app-icon name="plus" size="16"></app-icon>
+      Add User
+    </button>
+  </div>
+
+  <div class="filter-container">
+    <div class="filter-icon">
+      <app-icon name="filter" size="20" fill="#6b7280"></app-icon>
+    </div>
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Search by name"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onFilterChange()">
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Login"
+      [(ngModel)]="filterLogin"
+      (ngModelChange)="onFilterChange()">
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Email"
+      [(ngModel)]="filterEmail"
+      (ngModelChange)="onFilterChange()">
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Phone Number"
+      [(ngModel)]="filterPhoneNumber"
+      (ngModelChange)="onFilterChange()">
+    <div class="filter-dropdown-wrapper" #statusDropdown>
+      <button
+        type="button"
+        class="filter-dropdown-button"
+        (click)="toggleStatusDropdown()"
+        [class.open]="isStatusDropdownOpen">
+        <span class="filter-dropdown-text">{{ getStatusLabel() }}</span>
+        <app-icon
+          name="chevron-down"
+          size="16"
+          [className]="isStatusDropdownOpen ? 'filter-dropdown-chevron rotated' : 'filter-dropdown-chevron'">
+        </app-icon>
+      </button>
+      <div class="filter-dropdown-panel" [class.open]="isStatusDropdownOpen">
+        <button
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="filterActivated === ''"
+          (click)="selectStatus('')">
+          <span>All Status</span>
+          <app-icon
+            *ngIf="filterActivated === ''"
+            name="check-circle"
+            size="16"
+            fill="white">
+          </app-icon>
+        </button>
+        <button
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="filterActivated === 'true'"
+          (click)="selectStatus('true')">
+          <span>Activated</span>
+          <app-icon
+            *ngIf="filterActivated === 'true'"
+            name="check-circle"
+            size="16"
+            fill="white">
+          </app-icon>
+        </button>
+        <button
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="filterActivated === 'false'"
+          (click)="selectStatus('false')">
+          <span>Not Activated</span>
+          <app-icon
+            *ngIf="filterActivated === 'false'"
+            name="check-circle"
+            size="16"
+            fill="white">
+          </app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>User Name</th>
+          <th>Login</th>
+          <th>Email</th>
+          <th>Phone Number</th>
+          <th>Tenant</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>
+            <div class="user-name-cell">
+              <div class="user-icon-wrapper">
+                <app-icon name="user" size="20" fill="#14b8a6"></app-icon>
+              </div>
+              <div>
+                <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+                <div class="user-email">{{ user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ user.login }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phoneNumber }}</td>
+          <td>{{ user.tenant?.name || 'N/A' }}</td>
+          <td>
+            <span class="status-badge" [class.active]="user.activated">
+              {{ user.activated ? 'Activated' : 'Not Activated' }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon" (click)="openViewModal(user)" aria-label="View">
+                <app-icon name="eye" size="16"></app-icon>
+              </button>
+              <button class="btn-icon" (click)="openEditModal(user)" aria-label="Edit">
+                <app-icon name="pencil" size="16"></app-icon>
+              </button>
+              <button class="btn-icon" (click)="openAssignRoleModal(user)" aria-label="Assign Role" title="Assign Role">
+                <app-icon name="settings" size="16"></app-icon>
+              </button>
+              <button class="btn-icon" (click)="openResetPasswordModal(user)" aria-label="Reset Password" title="Reset Password">
+                <app-icon name="key" size="16"></app-icon>
+              </button>
+              <button class="btn-icon btn-icon-delete" (click)="openDeleteModal(user)" aria-label="Delete">
+                <app-icon name="trash" size="16"></app-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === 1"
+      (click)="previousPage()"
+      [disabled]="currentPage === 1">
+      < Previous
+    </button>
+    <div class="pagination-pages">
+      <button
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        class="pagination-page"
+        [class.active]="currentPage === (i + 1)"
+        (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </div>
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === totalPages"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages">
+      Next >
+    </button>
+  </div>
+
+  <app-modal
+    [isOpen]="isModalOpen"
+    [title]="modalTitle"
+    [size]="'md'"
+    (close)="closeModal()">
+    <div *ngIf="selectedUser" class="modal-form">
+      <div class="form-group">
+        <label>Login <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="selectedUser!.login"
+          [readonly]="!isEditMode && modalTitle === 'User Details'"
+          [required]="isEditMode"
+          class="form-input">
+      </div>
+      <div class="form-group" *ngIf="modalTitle === 'Add User'">
+        <label>Password <span class="required">*</span></label>
+        <input
+          type="password"
+          [(ngModel)]="selectedUser!.password"
+          [required]="modalTitle === 'Add User'"
+          class="form-input"
+          placeholder="Enter password">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name <span class="required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="selectedUser!.firstName"
+            [readonly]="!isEditMode && modalTitle === 'User Details'"
+            [required]="isEditMode"
+            class="form-input">
+        </div>
+        <div class="form-group">
+          <label>Last Name <span class="required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="selectedUser!.lastName"
+            [readonly]="!isEditMode && modalTitle === 'User Details'"
+            [required]="isEditMode"
+            class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="required">*</span></label>
+        <input
+          type="email"
+          [(ngModel)]="selectedUser!.email"
+          [readonly]="!isEditMode && modalTitle === 'User Details'"
+          [required]="isEditMode"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input
+          type="text"
+          [(ngModel)]="selectedUser!.phoneNumber"
+          [readonly]="!isEditMode && modalTitle === 'User Details'"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Tenant</label>
+        <select
+          [(ngModel)]="selectedUser!.tenant"
+          [disabled]="!isEditMode && modalTitle === 'User Details'"
+          class="custom-select"
+          [compareWith]="compareTenants">
+          <option [ngValue]="null">Select Tenant</option>
+          <option *ngFor="let tenant of allTenants" [ngValue]="tenant">
+            {{ tenant.name }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Language Key</label>
+        <input
+          type="text"
+          [(ngModel)]="selectedUser!.langKey"
+          [readonly]="!isEditMode && modalTitle === 'User Details'"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Image URL</label>
+        <input
+          type="text"
+          [(ngModel)]="selectedUser!.imageUrl"
+          [readonly]="!isEditMode && modalTitle === 'User Details'"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select
+          [(ngModel)]="selectedUser!.activated"
+          [disabled]="!isEditMode && modalTitle === 'User Details'"
+          class="custom-select">
+          <option [value]="true">Activated</option>
+          <option [value]="false">Not Activated</option>
+        </select>
+      </div>
+      <div *ngIf="isEditMode || modalTitle === 'User Details'" class="form-actions">
+        <button *ngIf="isEditMode" class="btn-primary" (click)="saveUser()">Save</button>
+        <button class="btn-secondary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Delete Confirmation Modal -->
+  <app-modal
+    [isOpen]="isDeleteModalOpen"
+    title="Delete User"
+    [size]="'sm'"
+    (close)="closeDeleteModal()">
+    <div class="delete-modal-content">
+      <p class="delete-message">Are you sure you want to delete this user?</p>
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn-danger" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Assign Role Modal -->
+  <app-modal
+    [isOpen]="isAssignRoleModalOpen"
+    title="Assign Roles"
+    [size]="'md'"
+    (close)="closeAssignRoleModal()">
+    <div *ngIf="userForRoleAssignment" class="assign-role-modal">
+      <!-- User Info Section -->
+      <div class="user-info-section">
+        <div class="user-info-avatar">
+          <app-icon name="user" size="24" fill="#14b8a6"></app-icon>
+        </div>
+        <div class="user-info-details">
+          <div class="user-info-name">{{ userForRoleAssignment.firstName }} {{ userForRoleAssignment.lastName }}</div>
+          <div class="user-info-email">{{ userForRoleAssignment.email }}</div>
+        </div>
+      </div>
+
+      <!-- Selected Roles Display -->
+      <div class="form-group">
+        <label>Selected Roles <span class="selected-count">({{ selectedRoles.length }})</span></label>
+        <div class="selected-roles-container" *ngIf="selectedRoles.length > 0; else noRolesSelected">
+          <div *ngFor="let role of selectedRoles" class="role-badge">
+            <span>{{ role.name }}</span>
+            <button 
+              type="button"
+              class="role-badge-remove"
+              (click)="removeRole(role)"
+              aria-label="Remove role">
+              <app-icon name="close" size="12" fill="#6b7280"></app-icon>
+            </button>
+          </div>
+        </div>
+        <ng-template #noRolesSelected>
+          <div class="no-roles-message">No roles selected. Use the dropdown below to add roles.</div>
+        </ng-template>
+      </div>
+
+      <!-- Multi-Select Dropdown -->
+      <div class="form-group">
+        <label>Select Roles</label>
+        <div class="multi-select-wrapper" #roleDropdown>
+          <div 
+            class="multi-select-trigger"
+            (click)="toggleRoleDropdown()"
+            [class.open]="isRoleDropdownOpen">
+            <span class="multi-select-placeholder">
+              {{ roleSearchQuery ? 'Searching...' : 'Search and select roles' }}
+            </span>
+            <app-icon
+              name="chevron-down"
+              size="16"
+              [className]="isRoleDropdownOpen ? 'multi-select-chevron rotated' : 'multi-select-chevron'">
+            </app-icon>
+          </div>
+          <div class="multi-select-dropdown" [class.open]="isRoleDropdownOpen">
+            <!-- Search Input -->
+            <div class="multi-select-search">
+              <app-icon name="search" size="16" fill="#6b7280"></app-icon>
+              <input
+                type="text"
+                class="multi-select-search-input"
+                placeholder="Search roles..."
+                [(ngModel)]="roleSearchQuery"
+                (click)="$event.stopPropagation()"
+                (focus)="isRoleDropdownOpen = true">
+            </div>
+            <!-- Roles List -->
+            <div class="multi-select-options">
+              <div 
+                *ngFor="let role of getFilteredRoles()"
+                class="multi-select-option"
+                [class.selected]="isRoleSelected(role)"
+                (click)="toggleRole(role)">
+                <div class="multi-select-option-content">
+                  <input
+                    type="checkbox"
+                    [checked]="isRoleSelected(role)"
+                    (change)="toggleRole(role)"
+                    (click)="$event.stopPropagation()"
+                    class="multi-select-checkbox">
+                  <span class="multi-select-option-label">{{ role.name }}</span>
+                </div>
+                <app-icon
+                  *ngIf="isRoleSelected(role)"
+                  name="check-circle"
+                  size="16"
+                  fill="#14b8a6">
+                </app-icon>
+              </div>
+              <div *ngIf="getFilteredRoles().length === 0" class="multi-select-no-results">
+                No roles found
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button class="btn-primary" (click)="saveRoleAssignment()">
+          <app-icon name="check-circle" size="16" fill="white"></app-icon>
+          Save Roles
+        </button>
+        <button class="btn-secondary" (click)="closeAssignRoleModal()">Cancel</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Reset Password Modal -->
+  <app-modal
+    [isOpen]="isResetPasswordModalOpen"
+    title="Reset Password"
+    [size]="'sm'"
+    (close)="closeResetPasswordModal()">
+    <div *ngIf="userForPasswordReset" class="reset-password-modal">
+      <!-- User Info Section -->
+      <div class="user-info-section">
+        <div class="user-info-avatar">
+          <app-icon name="user" size="24" fill="#14b8a6"></app-icon>
+        </div>
+        <div class="user-info-details">
+          <div class="user-info-name">{{ userForPasswordReset.firstName }} {{ userForPasswordReset.lastName }}</div>
+          <div class="user-info-email">{{ userForPasswordReset.email }}</div>
+        </div>
+      </div>
+
+      <!-- Password Form -->
+      <div class="form-group">
+        <label>New Password <span class="required">*</span></label>
+        <input
+          type="password"
+          [(ngModel)]="changePasswordModel.password"
+          class="form-input"
+          placeholder="Enter new password"
+          required>
+        <div class="form-hint">Password must be at least 4 characters long</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button class="btn-primary" (click)="savePasswordReset()">
+          <app-icon name="check-circle" size="16" fill="white"></app-icon>
+          Reset Password
+        </button>
+        <button class="btn-secondary" (click)="closeResetPasswordModal()">Cancel</button>
+      </div>
+    </div>
+  </app-modal>
+</div>
+

@@ -1,0 +1,21 @@
+<div class="dashboard-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Overview of hotel operations and statistics</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div *ngFor="let stat of stats" class="stat-card">
+      <div class="stat-icon" [style.background-color]="stat.color + '20'">
+        <app-icon [name]="stat.icon" size="28" [fill]="stat.color"></app-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+

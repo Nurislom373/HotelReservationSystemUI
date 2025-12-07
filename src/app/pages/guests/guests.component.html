@@ -1,0 +1,218 @@
+<div class="guests-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Guests</h1>
+      <p class="page-subtitle">Manage guest information and history</p>
+    </div>
+    <button class="btn-add" (click)="openAddModal()">
+      <app-icon name="plus" size="16"></app-icon>
+      Add Guest
+    </button>
+  </div>
+
+  <div class="filter-container">
+    <div class="filter-icon">
+      <app-icon name="filter" size="20" fill="#6b7280"></app-icon>
+    </div>
+    <input 
+      type="text"
+      class="filter-input"
+      placeholder="Search by name, email, or phone"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onFilterChange()">
+    <div class="filter-dropdown-wrapper" #statusDropdown>
+      <button 
+        type="button"
+        class="filter-dropdown-button"
+        (click)="toggleStatusDropdown()"
+        [class.open]="isStatusDropdownOpen">
+        <span class="filter-dropdown-text">{{ getStatusLabel() }}</span>
+        <app-icon 
+          name="chevron-down" 
+          size="16" 
+          [className]="isStatusDropdownOpen ? 'filter-dropdown-chevron rotated' : 'filter-dropdown-chevron'">
+        </app-icon>
+      </button>
+      <div class="filter-dropdown-panel" [class.open]="isStatusDropdownOpen">
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === ''"
+          (click)="selectStatus('')">
+          <span>All Status</span>
+          <app-icon 
+            *ngIf="selectedStatus === ''"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === 'checked-in'"
+          (click)="selectStatus('checked-in')">
+          <span>Checked-In</span>
+          <app-icon 
+            *ngIf="selectedStatus === 'checked-in'"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === 'checked-out'"
+          (click)="selectStatus('checked-out')">
+          <span>Checked-Out</span>
+          <app-icon 
+            *ngIf="selectedStatus === 'checked-out'"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === 'upcoming'"
+          (click)="selectStatus('upcoming')">
+          <span>Upcoming</span>
+          <app-icon 
+            *ngIf="selectedStatus === 'upcoming'"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="guests-grid">
+    <div *ngFor="let guest of filteredGuests" class="guest-card">
+      <span [class]="getStatusClass(guest.status)">
+        {{ guest.status === 'checked-in' ? 'Checked-In' : guest.status === 'checked-out' ? 'Checked-Out' : 'Upcoming' }}
+      </span>
+      <div class="guest-avatar">
+        <app-icon name="user" size="32" fill="#14b8a6"></app-icon>
+      </div>
+      <div class="guest-name">{{ guest.name }}</div>
+      <div class="guest-visits">{{ guest.visits }} visits</div>
+      <div class="guest-contact">
+        <div class="contact-item">
+          <app-icon name="envelope" size="16" fill="#14b8a6"></app-icon>
+          <span>{{ guest.email }}</span>
+        </div>
+        <div class="contact-item">
+          <app-icon name="phone" size="16" fill="#14b8a6"></app-icon>
+          <span>{{ guest.phone }}</span>
+        </div>
+      </div>
+      <div *ngIf="guest.currentRoom" class="current-room">
+        Current Room: <span class="room-number">{{ guest.currentRoom }}</span>
+      </div>
+      <button class="btn-view" (click)="openViewModal(guest)" type="button">View Profile</button>
+    </div>
+  </div>
+
+  <app-modal 
+    [isOpen]="isModalOpen" 
+    [title]="modalTitle"
+    [size]="'md'"
+    (close)="closeModal()">
+    <!-- Add Guest Form -->
+    <form *ngIf="isAddMode" [formGroup]="guestForm" (ngSubmit)="onSubmit()" class="modal-form">
+      <div class="form-group">
+        <label for="name" class="form-label">Name</label>
+        <input 
+          id="name"
+          type="text" 
+          formControlName="name"
+          class="form-input"
+          [class.error]="guestForm.get('name')?.invalid && guestForm.get('name')?.touched"
+          placeholder="Enter guest name">
+        <span *ngIf="guestForm.get('name')?.invalid && guestForm.get('name')?.touched" class="error-message">
+          {{ getFieldError('name') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label">Email</label>
+        <input 
+          id="email"
+          type="email" 
+          formControlName="email"
+          class="form-input"
+          [class.error]="guestForm.get('email')?.invalid && guestForm.get('email')?.touched"
+          placeholder="Enter email address">
+        <span *ngIf="guestForm.get('email')?.invalid && guestForm.get('email')?.touched" class="error-message">
+          {{ getFieldError('email') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="phone" class="form-label">Phone</label>
+        <input 
+          id="phone"
+          type="tel" 
+          formControlName="phone"
+          class="form-input"
+          [class.error]="guestForm.get('phone')?.invalid && guestForm.get('phone')?.touched"
+          placeholder="Enter phone number">
+        <span *ngIf="guestForm.get('phone')?.invalid && guestForm.get('phone')?.touched" class="error-message">
+          {{ getFieldError('phone') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="status" class="form-label">Status</label>
+        <select 
+          id="status"
+          formControlName="status"
+          class="custom-select">
+          <option value="upcoming">Upcoming</option>
+          <option value="checked-in">Checked-In</option>
+          <option value="checked-out">Checked-Out</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="guestForm.invalid">Add Guest</button>
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
+      </div>
+    </form>
+
+    <!-- View Guest Details -->
+    <div *ngIf="selectedGuest && !isAddMode" class="modal-content-view">
+      <div class="detail-row">
+        <span class="detail-label">Name:</span>
+        <span class="detail-value">{{ selectedGuest.name }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Email:</span>
+        <span class="detail-value">{{ selectedGuest.email }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Phone:</span>
+        <span class="detail-value">{{ selectedGuest.phone }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Visits:</span>
+        <span class="detail-value">{{ selectedGuest.visits }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Status:</span>
+        <span [class]="getStatusClass(selectedGuest.status)">
+          {{ selectedGuest.status === 'checked-in' ? 'Checked-In' : selectedGuest.status === 'checked-out' ? 'Checked-Out' : 'Upcoming' }}
+        </span>
+      </div>
+      <div *ngIf="selectedGuest.currentRoom" class="detail-row">
+        <span class="detail-label">Current Room:</span>
+        <span class="detail-value">{{ selectedGuest.currentRoom }}</span>
+      </div>
+    </div>
+  </app-modal>
+</div>
+

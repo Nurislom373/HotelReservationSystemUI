@@ -1,0 +1,145 @@
+.reservations-page {
+  padding: 32px;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.btn-add {
+  background: #14b8a6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+
+.btn-add:hover {
+  background: #0d9488;
+}
+
+.btn-add i {
+  font-size: 16px;
+}
+
+
+.table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.reservations-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reservations-table thead {
+  background: #f9fafb;
+}
+
+.reservations-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reservations-table td {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+  color: #111827;
+}
+
+.reservations-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.reservations-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+.status-badge.confirmed {
+  background: #14b8a6;
+  color: white;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon[aria-label="View"] {
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+}
+
+.btn-icon:hover {
+  background: #f3f4f6;
+  color: #14b8a6;
+}
+
+.btn-icon[aria-label="View"]:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.btn-icon i {
+  font-size: 16px;
+}
+

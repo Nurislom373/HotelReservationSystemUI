@@ -1,0 +1,131 @@
+<div class="reservations-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Reservations</h1>
+      <p class="page-subtitle">Manage hotel reservations and bookings</p>
+    </div>
+    <button class="btn-add">
+      <app-icon name="plus" size="16"></app-icon>
+      Add Reservation
+    </button>
+  </div>
+
+  <div class="filter-container">
+    <div class="filter-icon">
+      <app-icon name="filter" size="20" fill="#6b7280"></app-icon>
+    </div>
+    <input 
+      type="text"
+      class="filter-input"
+      placeholder="Search by guest name or room"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onFilterChange()">
+    <div class="filter-dropdown-wrapper" #statusDropdown>
+      <button 
+        type="button"
+        class="filter-dropdown-button"
+        (click)="toggleStatusDropdown()"
+        [class.open]="isStatusDropdownOpen">
+        <span class="filter-dropdown-text">{{ getStatusLabel() }}</span>
+        <app-icon 
+          name="chevron-down" 
+          size="16" 
+          [className]="isStatusDropdownOpen ? 'filter-dropdown-chevron rotated' : 'filter-dropdown-chevron'">
+        </app-icon>
+      </button>
+      <div class="filter-dropdown-panel" [class.open]="isStatusDropdownOpen">
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === ''"
+          (click)="selectStatus('')">
+          <span>All Status</span>
+          <app-icon 
+            *ngIf="selectedStatus === ''"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === 'confirmed'"
+          (click)="selectStatus('confirmed')">
+          <span>Confirmed</span>
+          <app-icon 
+            *ngIf="selectedStatus === 'confirmed'"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === 'pending'"
+          (click)="selectStatus('pending')">
+          <span>Pending</span>
+          <app-icon 
+            *ngIf="selectedStatus === 'pending'"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+        <button 
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="selectedStatus === 'cancelled'"
+          (click)="selectStatus('cancelled')">
+          <span>Cancelled</span>
+          <app-icon 
+            *ngIf="selectedStatus === 'cancelled'"
+            name="check-circle" 
+            size="16" 
+            fill="white">
+          </app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="reservations-table">
+      <thead>
+        <tr>
+          <th>Guest Name</th>
+          <th>Room</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let reservation of filteredReservations">
+          <td>{{ reservation.guest }}</td>
+          <td>{{ reservation.room }}</td>
+          <td>{{ reservation.checkIn }}</td>
+          <td>{{ reservation.checkOut }}</td>
+          <td>
+            <span class="status-badge" [class.confirmed]="reservation.status === 'confirmed'">
+              {{ reservation.status }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon" aria-label="View">
+                <app-icon name="eye" size="16"></app-icon>
+              </button>
+              <button class="btn-icon" aria-label="Edit">
+                <app-icon name="pencil" size="16"></app-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

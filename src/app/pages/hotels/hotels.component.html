@@ -1,0 +1,299 @@
+<div class="hotels-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Hotels</h1>
+      <p class="page-subtitle">Manage hotels and their configurations.</p>
+    </div>
+    <button class="btn-add" (click)="openAddModal()">
+      <app-icon name="plus" size="16"></app-icon>
+      Add Hotel
+    </button>
+  </div>
+
+  <div class="filter-container">
+    <div class="filter-icon">
+      <app-icon name="filter" size="20" fill="#6b7280"></app-icon>
+    </div>
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Search by name"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onFilterChange()">
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Phone Number"
+      [(ngModel)]="filterPhoneNumber"
+      (ngModelChange)="onFilterChange()">
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Address"
+      [(ngModel)]="filterAddress"
+      (ngModelChange)="onFilterChange()">
+  </div>
+
+  <div class="table-container">
+    <table class="hotels-table">
+      <thead>
+        <tr>
+          <th>Hotel Name</th>
+          <th>Type</th>
+          <th>Address</th>
+          <th>Phone Number</th>
+          <th>Pet Accommodation</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let hotel of hotels">
+          <td>
+            <div class="hotel-name-cell">
+              <div class="hotel-icon-wrapper">
+                <app-icon name="bed" size="20" fill="#14b8a6"></app-icon>
+              </div>
+              <div>
+                <div class="hotel-name">{{ hotel.name }}</div>
+                <div class="hotel-location">{{ hotel.country }}, {{ hotel.state }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ getHotelTypeLabel(hotel.type) }}</td>
+          <td>{{ hotel.address }}</td>
+          <td>{{ hotel.phoneNumber }}</td>
+          <td>
+            <span class="status-badge" [class.active]="hotel.petAccommodation">
+              {{ hotel.petAccommodation ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon" (click)="openViewModal(hotel)" aria-label="View">
+                <app-icon name="eye" size="16"></app-icon>
+              </button>
+              <button class="btn-icon" (click)="openEditModal(hotel)" aria-label="Edit">
+                <app-icon name="pencil" size="16"></app-icon>
+              </button>
+              <button class="btn-icon btn-icon-delete" (click)="openDeleteModal(hotel)" aria-label="Delete">
+                <app-icon name="trash" size="16"></app-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === 1"
+      (click)="previousPage()"
+      [disabled]="currentPage === 1">
+      < Previous
+    </button>
+    <div class="pagination-pages">
+      <button
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        class="pagination-page"
+        [class.active]="currentPage === (i + 1)"
+        (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </div>
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === totalPages"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages">
+      Next >
+    </button>
+  </div>
+
+  <app-modal
+    [isOpen]="isModalOpen"
+    [title]="modalTitle"
+    [size]="'lg'"
+    (close)="closeModal()">
+    <div *ngIf="selectedHotel" class="modal-form">
+      <div class="form-group">
+        <label>Name <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="selectedHotel!.name"
+          [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+          [required]="isEditMode"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select
+          [(ngModel)]="selectedHotel!.type"
+          [disabled]="!isEditMode && modalTitle === 'Hotel Details'"
+          class="custom-select">
+          <option *ngFor="let type of hotelTypes" [value]="type">
+            {{ type }}
+          </option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Country</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedHotel!.country"
+            [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+            class="form-input">
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedHotel!.state"
+            [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+            class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Address <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="selectedHotel!.address"
+          [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+          [required]="isEditMode"
+          class="form-input">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>District</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedHotel!.district"
+            [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+            class="form-input">
+        </div>
+        <div class="form-group">
+          <label>House</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedHotel!.house"
+            [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+            class="form-input">
+        </div>
+        <div class="form-group">
+          <label>Postal Code</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedHotel!.postalCode"
+            [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+            class="form-input">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Latitude</label>
+          <input
+            type="number"
+            [(ngModel)]="selectedHotel!.latitude"
+            [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+            class="form-input">
+        </div>
+        <div class="form-group">
+          <label>Longitude</label>
+          <input
+            type="number"
+            [(ngModel)]="selectedHotel!.longitude"
+            [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+            class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Phone Number <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="selectedHotel!.phoneNumber"
+          [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+          [required]="isEditMode"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Logo Key</label>
+        <input
+          type="text"
+          [(ngModel)]="selectedHotel!.logoKey"
+          [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Pet Accommodation</label>
+        <select
+          [(ngModel)]="selectedHotel!.petAccommodation"
+          [disabled]="!isEditMode && modalTitle === 'Hotel Details'"
+          class="custom-select">
+          <option [value]="false">No</option>
+          <option [value]="true">Yes</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Days Off (comma-separated)</label>
+        <input
+          type="text"
+          [value]="getDaysOffString()"
+          (input)="setDaysOffString($any($event.target).value)"
+          [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
+          class="form-input"
+          placeholder="e.g., Monday, Tuesday">
+      </div>
+      <div class="form-group" *ngIf="isEditMode || modalTitle === 'Hotel Details'">
+        <label>Amenities</label>
+        <div class="checkbox-group">
+          <label *ngFor="let amenity of allAmenities" class="checkbox-label">
+            <input
+              type="checkbox"
+              [checked]="isAmenitySelected(amenity)"
+              (change)="toggleAmenity(amenity)"
+              [disabled]="!isEditMode && modalTitle === 'Hotel Details'"
+              class="checkbox-input">
+            <span>{{ amenity.name }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group" *ngIf="isEditMode || modalTitle === 'Hotel Details'">
+        <label>Room Types</label>
+        <div class="checkbox-group">
+          <label *ngFor="let roomType of allRoomTypes" class="checkbox-label">
+            <input
+              type="checkbox"
+              [checked]="isRoomTypeSelected(roomType)"
+              (change)="toggleRoomType(roomType)"
+              [disabled]="!isEditMode && modalTitle === 'Hotel Details'"
+              class="checkbox-input">
+            <span>{{ roomType.name }}</span>
+          </label>
+        </div>
+      </div>
+      <div *ngIf="isEditMode || modalTitle === 'Hotel Details'" class="form-actions">
+        <button *ngIf="isEditMode" class="btn-primary" (click)="saveHotel()">Save</button>
+        <button class="btn-secondary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Delete Confirmation Modal -->
+  <app-modal
+    [isOpen]="isDeleteModalOpen"
+    title="Delete Hotel"
+    [size]="'sm'"
+    (close)="closeDeleteModal()">
+    <div class="delete-modal-content">
+      <p class="delete-message">Are you sure you want to delete this hotel?</p>
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn-danger" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </app-modal>
+</div>
+
