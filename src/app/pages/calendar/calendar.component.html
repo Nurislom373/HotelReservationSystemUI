@@ -1,0 +1,109 @@
+<div class="calendar-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Calendar</h1>
+      <p class="page-subtitle">View and manage room reservations</p>
+    </div>
+    <div class="date-selector-container">
+      <select
+        class="date-selector"
+        [(ngModel)]="selectedMonth"
+        (ngModelChange)="onMonthYearChange()">
+        <option *ngFor="let month of months; let i = index" [value]="i">
+          {{ month }}
+        </option>
+      </select>
+      <select
+        class="date-selector"
+        [(ngModel)]="selectedYear"
+        (ngModelChange)="onMonthYearChange()">
+        <option *ngFor="let year of availableYears" [value]="year">
+          {{ year }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="calendar-container">
+    <!-- Month Navigation -->
+    <div class="month-navigation">
+      <button class="nav-button" (click)="previousMonth()" aria-label="Previous month">
+        <app-icon name="chevron-left" size="20"></app-icon>
+      </button>
+      <h2 class="month-year">{{ getMonthYearString() }}</h2>
+      <button class="nav-button" (click)="nextMonth()" aria-label="Next month">
+        <app-icon name="chevron-right" size="20"></app-icon>
+      </button>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-grid-wrapper">
+      <div class="calendar-grid">
+        <!-- Left Column: Rooms -->
+        <div class="rooms-column">
+          <div class="rooms-header">ROOMS</div>
+          <div class="rooms-list">
+            <ng-container *ngFor="let calendarItem of calendarData">
+              <!-- Room Type Header -->
+              <div class="room-type-header" [style.color]="getRoomTypeColor(calendarItem.roomType.id)">
+                {{ calendarItem.roomType.name }}
+              </div>
+              
+              <!-- Rooms under this type -->
+              <div 
+                *ngFor="let room of calendarItem.rooms" 
+                class="room-row"
+                [style.border-left-color]="getRoomTypeColor(calendarItem.roomType.id)">
+                <span class="room-number" [style.color]="getRoomTypeColor(calendarItem.roomType.id)">
+                  {{ room.number }}
+                </span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Calendar Grid Area -->
+        <div class="calendar-dates-area">
+          <!-- Date Headers -->
+          <div class="date-headers" [style.grid-template-columns]="'repeat(' + daysInMonth.length + ', 120px)'">
+            <div *ngFor="let header of dayHeaders" class="date-header">
+              <div class="date-day">{{ header.dayName }}</div>
+              <div class="date-number">{{ header.dayNumber }}</div>
+            </div>
+          </div>
+
+          <!-- Calendar Cells -->
+          <div class="calendar-cells">
+            <ng-container *ngFor="let calendarItem of calendarData">
+              <ng-container *ngFor="let room of calendarItem.rooms">
+                <div class="calendar-row" [style.grid-template-columns]="'repeat(' + daysInMonth.length + ', 120px)'">
+                  <!-- Calendar cells for each day -->
+                  <div 
+                    *ngFor="let date of daysInMonth" 
+                    class="calendar-cell">
+                  </div>
+                  
+                  <!-- Reservations spanning multiple days -->
+                  <ng-container *ngFor="let reservation of getReservationsForRoom(room.id)">
+                    <div 
+                      *ngIf="isReservationVisibleInMonth(reservation)"
+                      class="reservation-block"
+                      [style.background-color]="getRoomTypeColor(calendarItem.roomType.id)"
+                      [style.grid-column-start]="getReservationStartColumn(reservation)"
+                      [style.grid-column-end]="getReservationStartColumn(reservation) + getReservationSpan(reservation)"
+                      [title]="(reservation.user?.name || 'N/A') + ' - ' + (reservation.id ? '#' + reservation.id : '')">
+                      <div class="reservation-content">
+                        <div class="reservation-user">{{ reservation.user?.name || 'N/A' }}</div>
+                        <div class="reservation-id" *ngIf="reservation.id">#{{ reservation.id }}</div>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
