@@ -32,6 +32,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   navItems: NavItem[] = [
     { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
     { label: 'Reservations', route: '/reservations', icon: 'calendar' },
+    { label: 'Calendar', route: '/calendar', icon: 'calendar' },
     { label: 'Guests', route: '/guests', icon: 'users' },
   ];
 

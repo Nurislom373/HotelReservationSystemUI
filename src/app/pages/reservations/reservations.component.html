@@ -4,7 +4,7 @@
       <h1 class="page-title">Reservations</h1>
       <p class="page-subtitle">Manage hotel reservations and bookings</p>
     </div>
-    <button class="btn-add">
+    <button class="btn-add" (click)="openAddModal()">
       <app-icon name="plus" size="16"></app-icon>
       Add Reservation
     </button>
@@ -14,75 +14,50 @@
     <div class="filter-icon">
       <app-icon name="filter" size="20" fill="#6b7280"></app-icon>
     </div>
-    <input 
+    <input
       type="text"
       class="filter-input"
       placeholder="Search by guest name or room"
       [(ngModel)]="searchQuery"
       (ngModelChange)="onFilterChange()">
     <div class="filter-dropdown-wrapper" #statusDropdown>
-      <button 
+      <button
         type="button"
         class="filter-dropdown-button"
         (click)="toggleStatusDropdown()"
         [class.open]="isStatusDropdownOpen">
-        <span class="filter-dropdown-text">{{ getStatusLabel() }}</span>
-        <app-icon 
-          name="chevron-down" 
-          size="16" 
+        <span class="filter-dropdown-text">{{ getStatusFilterLabel() }}</span>
+        <app-icon
+          name="chevron-down"
+          size="16"
           [className]="isStatusDropdownOpen ? 'filter-dropdown-chevron rotated' : 'filter-dropdown-chevron'">
         </app-icon>
       </button>
       <div class="filter-dropdown-panel" [class.open]="isStatusDropdownOpen">
-        <button 
+        <button
           type="button"
           class="filter-dropdown-option"
-          [class.selected]="selectedStatus === ''"
+          [class.selected]="filterStatus === ''"
           (click)="selectStatus('')">
           <span>All Status</span>
-          <app-icon 
-            *ngIf="selectedStatus === ''"
-            name="check-circle" 
-            size="16" 
+          <app-icon
+            *ngIf="filterStatus === ''"
+            name="check-circle"
+            size="16"
             fill="white">
           </app-icon>
         </button>
-        <button 
+        <button
+          *ngFor="let status of reservationStatuses"
           type="button"
           class="filter-dropdown-option"
-          [class.selected]="selectedStatus === 'confirmed'"
-          (click)="selectStatus('confirmed')">
-          <span>Confirmed</span>
-          <app-icon 
-            *ngIf="selectedStatus === 'confirmed'"
-            name="check-circle" 
-            size="16" 
-            fill="white">
-          </app-icon>
-        </button>
-        <button 
-          type="button"
-          class="filter-dropdown-option"
-          [class.selected]="selectedStatus === 'pending'"
-          (click)="selectStatus('pending')">
-          <span>Pending</span>
-          <app-icon 
-            *ngIf="selectedStatus === 'pending'"
-            name="check-circle" 
-            size="16" 
-            fill="white">
-          </app-icon>
-        </button>
-        <button 
-          type="button"
-          class="filter-dropdown-option"
-          [class.selected]="selectedStatus === 'cancelled'"
-          (click)="selectStatus('cancelled')">
-          <span>Cancelled</span>
-          <app-icon 
-            *ngIf="selectedStatus === 'cancelled'"
-            name="check-circle" 
-            size="16" 
+          [class.selected]="filterStatus === status"
+          (click)="selectStatus(status)">
+          <span>{{ status }}</span>
+          <app-icon
+            *ngIf="filterStatus === status"
+            name="check-circle"
+            size="16"
             fill="white">
           </app-icon>
         </button>
@@ -98,28 +73,40 @@
           <th>Room</th>
           <th>Check-In</th>
           <th>Check-Out</th>
+          <th>Total Price</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let reservation of filteredReservations">
-          <td>{{ reservation.guest }}</td>
-          <td>{{ reservation.room }}</td>
-          <td>{{ reservation.checkIn }}</td>
-          <td>{{ reservation.checkOut }}</td>
+        <tr *ngFor="let reservation of reservations">
           <td>
-            <span class="status-badge" [class.confirmed]="reservation.status === 'confirmed'">
-              {{ reservation.status }}
+            <div class="guest-name-cell">
+              <div class="guest-icon-wrapper">
+                <app-icon name="user" size="20" fill="#14b8a6"></app-icon>
+              </div>
+              <div class="guest-name">{{ reservation.user?.name || 'N/A' }}</div>
+            </div>
+          </td>
+          <td>{{ reservation.room?.number || 'N/A' }}</td>
+          <td>{{ formatDate(reservation.checkInDate) }}</td>
+          <td>{{ formatDate(reservation.checkOutDate) }}</td>
+          <td>${{ reservation.totalPrice || 0 }}</td>
+          <td>
+            <span class="status-badge" [class]="getStatusClass(reservation.status)">
+              {{ getStatusLabel(reservation.status) }}
             </span>
           </td>
           <td>
             <div class="action-buttons">
-              <button class="btn-icon" aria-label="View">
+              <button class="btn-icon" (click)="openViewModal(reservation)" aria-label="View">
                 <app-icon name="eye" size="16"></app-icon>
               </button>
-              <button class="btn-icon" aria-label="Edit">
+              <button class="btn-icon" (click)="openEditModal(reservation)" aria-label="Edit">
                 <app-icon name="pencil" size="16"></app-icon>
+              </button>
+              <button class="btn-icon btn-icon-delete" (click)="openDeleteModal(reservation)" aria-label="Delete">
+                <app-icon name="trash" size="16"></app-icon>
               </button>
             </div>
           </td>
@@ -127,5 +114,129 @@
       </tbody>
     </table>
   </div>
-</div>
 
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === 1"
+      (click)="previousPage()"
+      [disabled]="currentPage === 1">
+      < Previous
+    </button>
+    <div class="pagination-pages">
+      <button
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        class="pagination-page"
+        [class.active]="currentPage === (i + 1)"
+        (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </div>
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === totalPages"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages">
+      Next >
+    </button>
+  </div>
+
+  <app-modal
+    [isOpen]="isModalOpen"
+    [title]="modalTitle"
+    [size]="'md'"
+    (close)="closeModal()">
+    <div *ngIf="selectedReservation" class="modal-form">
+      <div class="form-group">
+        <label>Guest Name <span class="required">*</span></label>
+        <select
+          [(ngModel)]="selectedReservation!.user"
+          [disabled]="!isEditMode && modalTitle === 'Reservation Details'"
+          class="custom-select"
+          [compareWith]="compareUsers">
+          <option [ngValue]="null">Select Guest</option>
+          <option *ngFor="let user of allUsers" [ngValue]="user">
+            {{ user.name }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Room <span class="required">*</span></label>
+        <select
+          [(ngModel)]="selectedReservation!.room"
+          [disabled]="!isEditMode && modalTitle === 'Reservation Details'"
+          class="custom-select"
+          [compareWith]="compareRooms">
+          <option [ngValue]="null">Select Room</option>
+          <option *ngFor="let room of allRooms" [ngValue]="room">
+            {{ room.number }} ({{ room.type?.name || 'N/A' }})
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Check-In Date <span class="required">*</span></label>
+        <input
+          type="date"
+          [value]="getDateString(selectedReservation!.checkInDate)"
+          (input)="onCheckInDateChange($event)"
+          [readonly]="!isEditMode && modalTitle === 'Reservation Details'"
+          [disabled]="!isEditMode && modalTitle === 'Reservation Details'"
+          [required]="isEditMode"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Check-Out Date <span class="required">*</span></label>
+        <input
+          type="date"
+          [value]="getDateString(selectedReservation!.checkOutDate)"
+          (input)="onCheckOutDateChange($event)"
+          [readonly]="!isEditMode && modalTitle === 'Reservation Details'"
+          [disabled]="!isEditMode && modalTitle === 'Reservation Details'"
+          [required]="isEditMode"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Total Price <span class="required">*</span></label>
+        <input
+          type="number"
+          [(ngModel)]="selectedReservation!.totalPrice"
+          [readonly]="!isEditMode && modalTitle === 'Reservation Details'"
+          [required]="isEditMode"
+          step="0.01"
+          min="0"
+          class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Status <span class="required">*</span></label>
+        <select
+          [(ngModel)]="selectedReservation!.status"
+          [disabled]="!isEditMode && modalTitle === 'Reservation Details'"
+          class="custom-select">
+          <option *ngFor="let status of reservationStatuses" [ngValue]="status">
+            {{ status }}
+          </option>
+        </select>
+      </div>
+      <div *ngIf="isEditMode || modalTitle === 'Reservation Details'" class="form-actions">
+        <button *ngIf="isEditMode" class="btn-primary" (click)="saveReservation()">Save</button>
+        <button class="btn-secondary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Delete Confirmation Modal -->
+  <app-modal
+    [isOpen]="isDeleteModalOpen"
+    title="Delete Reservation"
+    [size]="'sm'"
+    (close)="closeDeleteModal()">
+    <div class="delete-modal-content">
+      <p class="delete-message">Are you sure you want to delete this reservation?</p>
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn-danger" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </app-modal>
+</div>

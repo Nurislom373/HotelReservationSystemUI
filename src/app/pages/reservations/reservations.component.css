@@ -1,6 +1,5 @@
 .reservations-page {
   padding: 32px;
-  min-height: 100vh;
   background: #f8fafc;
 }
 
@@ -8,7 +7,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .page-title {
@@ -47,12 +47,13 @@
   font-size: 16px;
 }
 
-
 .table-container {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .reservations-table {
@@ -72,22 +73,61 @@
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  border-top: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.reservations-table th:first-child {
+  border-left: none;
+}
+
+.reservations-table th:last-child {
+  border-right: none;
 }
 
 .reservations-table td {
   padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
   font-size: 14px;
   color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reservations-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .reservations-table tbody tr:hover {
   background: #f9fafb;
 }
 
-.reservations-table tbody tr:last-child td {
-  border-bottom: none;
+.guest-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guest-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  background: #e0f2fe;
+  border: 1px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.guest-icon-wrapper app-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest-name {
+  font-weight: 500;
+  color: #111827;
 }
 
 .status-badge {
@@ -101,8 +141,18 @@
   color: #6b7280;
 }
 
-.status-badge.confirmed {
+.status-badge.active {
   background: #14b8a6;
+  color: white;
+}
+
+.status-badge.new {
+  background: #3b82f6;
+  color: white;
+}
+
+.status-badge.not-active {
+  background: #ef4444;
   color: white;
 }
 
@@ -112,8 +162,8 @@
 }
 
 .btn-icon {
-  background: none;
-  border: none;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
   color: #6b7280;
   cursor: pointer;
   padding: 8px;
@@ -124,22 +174,211 @@
   justify-content: center;
 }
 
-.btn-icon[aria-label="View"] {
-  border: 1px solid #e5e7eb;
-  background: #f3f4f6;
-}
-
 .btn-icon:hover {
-  background: #f3f4f6;
-  color: #14b8a6;
-}
-
-.btn-icon[aria-label="View"]:hover {
   background: #e5e7eb;
   border-color: #d1d5db;
+  color: #14b8a6;
 }
 
 .btn-icon i {
   font-size: 16px;
 }
 
+.btn-icon-delete {
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.btn-icon-delete:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.delete-modal-content {
+  padding: 8px 0;
+}
+
+.delete-message {
+  font-size: 14px;
+  color: #374151;
+  margin: 0 0 24px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-group label .required {
+  color: #ef4444;
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #111827;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.form-input[readonly] {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+.form-input:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.btn-primary {
+  background: #14b8a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #0d9488;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px 0 0 0;
+  flex-shrink: 0;
+}
+
+.pagination-btn {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pagination-page {
+  min-width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-page:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.pagination-page.active {
+  background: #14b8a6;
+  border-color: #14b8a6;
+  color: white;
+}
+
+.pagination-page.active:hover {
+  background: #0d9488;
+  border-color: #0d9488;
+}
