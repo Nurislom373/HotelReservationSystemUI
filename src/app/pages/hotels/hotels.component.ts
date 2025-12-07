@@ -6,6 +6,7 @@ import {AmenityService} from '../../services/amenity.service';
 import {AmenityModel} from '../../services/model/amenity.model';
 import {RoomTypeService} from '../../services/room-type.service';
 import {RoomTypeModel} from '../../services/model/room.type.model';
+import {DayOffType} from '../../services/model/day.off.model';
 import {ModalComponent} from '../../components/modal/modal.component';
 import {FormsModule} from '@angular/forms';
 import {IconComponent} from '../../components/icons/icons.component';
@@ -50,8 +51,14 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
   roomTypeSearchQuery: string = '';
   isRoomTypeDropdownOpen: boolean = false;
 
+  // Multi-select properties for Days Off
+  daysOffSearchQuery: string = '';
+  isDaysOffDropdownOpen: boolean = false;
+  availableDaysOff: DayOffType[] = Object.values(DayOffType);
+
   @ViewChild('amenityDropdown', {static: false}) amenityDropdown?: ElementRef;
   @ViewChild('roomTypeDropdown', {static: false}) roomTypeDropdown?: ElementRef;
+  @ViewChild('daysOffDropdown', {static: false}) daysOffDropdown?: ElementRef;
 
   // Filter values
   searchQuery: string = '';
@@ -221,19 +228,11 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     // Reset multi-select states
     this.amenitySearchQuery = '';
     this.roomTypeSearchQuery = '';
+    this.daysOffSearchQuery = '';
     this.closeAmenityDropdown();
     this.closeRoomTypeDropdown();
+    this.closeDaysOffDropdown();
     setTimeout(() => this.initMap(), 100);
-  }
-
-  getDaysOffString(): string {
-    if (!this.selectedHotel || !this.selectedHotel.daysOff) return '';
-    return this.selectedHotel.daysOff.join(', ');
-  }
-
-  setDaysOffString(value: string) {
-    if (!this.selectedHotel) return;
-    this.selectedHotel.daysOff = value.split(',').map(d => d.trim()).filter(d => d.length > 0);
   }
 
   openViewModal(hotel: HotelModel) {
@@ -244,8 +243,10 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     // Reset multi-select states
     this.amenitySearchQuery = '';
     this.roomTypeSearchQuery = '';
+    this.daysOffSearchQuery = '';
     this.closeAmenityDropdown();
     this.closeRoomTypeDropdown();
+    this.closeDaysOffDropdown();
     setTimeout(() => this.initMap(), 100);
   }
 
@@ -257,8 +258,10 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     // Reset multi-select states
     this.amenitySearchQuery = '';
     this.roomTypeSearchQuery = '';
+    this.daysOffSearchQuery = '';
     this.closeAmenityDropdown();
     this.closeRoomTypeDropdown();
+    this.closeDaysOffDropdown();
     setTimeout(() => this.initMap(), 100);
   }
 
@@ -273,8 +276,10 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     // Reset multi-select states
     this.closeAmenityDropdown();
     this.closeRoomTypeDropdown();
+    this.closeDaysOffDropdown();
     this.amenitySearchQuery = '';
     this.roomTypeSearchQuery = '';
+    this.daysOffSearchQuery = '';
   }
 
   saveHotel() {
@@ -420,6 +425,61 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  getDayOffDisplayName(dayOff: string): string {
+    // Convert enum value to readable format (e.g., "MONDAY" -> "Monday")
+    return dayOff.charAt(0) + dayOff.slice(1).toLowerCase();
+  }
+
+  toggleDayOff(dayOff: DayOffType) {
+    if (!this.selectedHotel) return;
+    if (!this.selectedHotel.daysOff) {
+      this.selectedHotel.daysOff = [];
+    }
+    const dayOffValue = dayOff as string;
+    const index = this.selectedHotel.daysOff.indexOf(dayOffValue);
+    if (index >= 0) {
+      this.selectedHotel.daysOff.splice(index, 1);
+    } else {
+      this.selectedHotel.daysOff.push(dayOffValue);
+    }
+  }
+
+  isDayOffSelected(dayOff: DayOffType): boolean {
+    if (!this.selectedHotel || !this.selectedHotel.daysOff) return false;
+    return this.selectedHotel.daysOff.includes(dayOff as string);
+  }
+
+  removeDayOff(dayOff: string) {
+    if (!this.selectedHotel || !this.selectedHotel.daysOff) return;
+    const index = this.selectedHotel.daysOff.indexOf(dayOff);
+    if (index >= 0) {
+      this.selectedHotel.daysOff.splice(index, 1);
+    }
+  }
+
+  toggleDaysOffDropdown() {
+    this.isDaysOffDropdownOpen = !this.isDaysOffDropdownOpen;
+  }
+
+  closeDaysOffDropdown() {
+    this.isDaysOffDropdownOpen = false;
+  }
+
+  getFilteredDaysOff(): DayOffType[] {
+    if (!this.daysOffSearchQuery) {
+      return this.availableDaysOff;
+    }
+    const query = this.daysOffSearchQuery.toLowerCase();
+    return this.availableDaysOff.filter(dayOff =>
+      dayOff.toLowerCase().includes(query) ||
+      this.getDayOffDisplayName(dayOff).toLowerCase().includes(query)
+    );
+  }
+
+  get DayOffType() {
+    return DayOffType;
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     if (this.amenityDropdown && !this.amenityDropdown.nativeElement.contains(event.target)) {
@@ -427,6 +487,9 @@ export class HotelsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (this.roomTypeDropdown && !this.roomTypeDropdown.nativeElement.contains(event.target)) {
       this.closeRoomTypeDropdown();
+    }
+    if (this.daysOffDropdown && !this.daysOffDropdown.nativeElement.contains(event.target)) {
+      this.closeDaysOffDropdown();
     }
   }
 

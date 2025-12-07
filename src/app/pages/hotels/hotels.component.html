@@ -260,15 +260,85 @@
           <option [value]="true">Yes</option>
         </select>
       </div>
+      <!-- Days Off Multi-Select -->
       <div class="form-group">
-        <label>Days Off (comma-separated)</label>
-        <input
-          type="text"
-          [value]="getDaysOffString()"
-          (input)="setDaysOffString($any($event.target).value)"
-          [readonly]="!isEditMode && modalTitle === 'Hotel Details'"
-          class="form-input"
-          placeholder="e.g., Monday, Tuesday">
+        <label>Days Off <span class="selected-count" *ngIf="selectedHotel && selectedHotel.daysOff">({{ selectedHotel.daysOff.length }})</span></label>
+        
+        <!-- Selected Days Off Display -->
+        <div class="selected-items-container" *ngIf="selectedHotel && selectedHotel.daysOff && selectedHotel.daysOff.length > 0; else noDaysOffSelected">
+          <div *ngFor="let dayOff of selectedHotel.daysOff" class="selected-item-badge">
+            <span>{{ getDayOffDisplayName(dayOff) }}</span>
+            <button 
+              *ngIf="isEditMode"
+              type="button"
+              class="badge-remove-btn"
+              (click)="removeDayOff(dayOff)"
+              aria-label="Remove day">
+              <app-icon name="close" size="12" fill="#6b7280"></app-icon>
+            </button>
+          </div>
+        </div>
+        <ng-template #noDaysOffSelected>
+          <div class="no-items-message" *ngIf="isEditMode">No days off selected. Use the dropdown below to add days.</div>
+          <div class="no-items-message" *ngIf="!isEditMode">No days off selected.</div>
+        </ng-template>
+
+        <!-- Multi-Select Dropdown (only in edit mode) -->
+        <div class="multi-select-wrapper" *ngIf="isEditMode" #daysOffDropdown>
+          <div 
+            class="multi-select-trigger"
+            (click)="toggleDaysOffDropdown()"
+            [class.open]="isDaysOffDropdownOpen">
+            <span class="multi-select-placeholder">
+              {{ daysOffSearchQuery ? 'Searching...' : 'Search and select days off' }}
+            </span>
+            <app-icon
+              name="chevron-down"
+              size="16"
+              [className]="isDaysOffDropdownOpen ? 'multi-select-chevron rotated' : 'multi-select-chevron'">
+            </app-icon>
+          </div>
+          <div class="multi-select-dropdown" [class.open]="isDaysOffDropdownOpen">
+            <!-- Search Input -->
+            <div class="multi-select-search">
+              <app-icon name="search" size="16" fill="#6b7280"></app-icon>
+              <input
+                type="text"
+                class="multi-select-search-input"
+                placeholder="Search days..."
+                [(ngModel)]="daysOffSearchQuery"
+                (click)="$event.stopPropagation()"
+                (focus)="isDaysOffDropdownOpen = true">
+            </div>
+            <!-- Days Off List -->
+            <div class="multi-select-options">
+              <div 
+                *ngFor="let dayOff of getFilteredDaysOff()"
+                class="multi-select-option"
+                [class.selected]="isDayOffSelected(dayOff)"
+                (click)="toggleDayOff(dayOff)">
+                <div class="multi-select-option-content">
+                  <input
+                    type="checkbox"
+                    [checked]="isDayOffSelected(dayOff)"
+                    (change)="toggleDayOff(dayOff)"
+                    (click)="$event.stopPropagation()"
+                    class="multi-select-checkbox">
+                  <span class="multi-select-option-label">{{ getDayOffDisplayName(dayOff) }}</span>
+                </div>
+                <app-icon
+                  *ngIf="isDayOffSelected(dayOff)"
+                  name="check-circle"
+                  size="16"
+                  fill="#14b8a6">
+                </app-icon>
+              </div>
+              <div *ngIf="getFilteredDaysOff().length === 0" class="multi-select-no-results">
+                No days found
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- Amenities Multi-Select -->
       <div class="form-group" *ngIf="isEditMode || modalTitle === 'Hotel Details'">
