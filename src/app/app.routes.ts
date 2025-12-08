@@ -70,5 +70,10 @@ export const routes: Routes = [
     path: 'rooms-crud',
     loadComponent: () => import('./pages/rooms/rooms-crud.component').then(m => m.RoomsCrudComponent),
     canActivate: [authGuard]
+  },
+  {
+    path: 'rate-plans',
+    loadComponent: () => import('./pages/rate-plans/rate-plans.component').then(m => m.RatePlansComponent),
+    canActivate: [authGuard]
   }
 ];

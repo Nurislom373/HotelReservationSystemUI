@@ -148,6 +148,11 @@ import { CommonModule } from '@angular/common';
         <g *ngSwitchCase="'info'">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
         </g>
+        
+        <!-- Tag icon (for Rate Plans/Dynamic Pricing) -->
+        <g *ngSwitchCase="'tag'">
+          <path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7.01v9c0 1.1.9 1.99 2 1.99L16 18c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 16H5V8h11l3.55 4L16 16z"/>
+        </g>
       </ng-container>
     </svg>
   `

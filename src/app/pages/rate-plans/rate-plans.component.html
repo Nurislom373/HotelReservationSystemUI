@@ -1,0 +1,431 @@
+<div class="rate-plans-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Rate Plans</h1>
+      <p class="page-subtitle">Manage rate plans and pricing configurations.</p>
+    </div>
+    <button class="btn-add" (click)="openAddModal()">
+      <app-icon name="plus" size="16"></app-icon>
+      Add Rate Plan
+    </button>
+  </div>
+
+  <div class="filter-container">
+    <div class="filter-icon">
+      <app-icon name="filter" size="20" fill="#6b7280"></app-icon>
+    </div>
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Search by name"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onFilterChange()">
+    <div class="filter-dropdown-wrapper" #statusDropdown>
+      <button
+        type="button"
+        class="filter-dropdown-button"
+        (click)="toggleStatusDropdown()"
+        [class.open]="isStatusDropdownOpen">
+        <span class="filter-dropdown-text">{{ getStatusFilterLabel() }}</span>
+        <app-icon
+          name="chevron-down"
+          size="16"
+          [className]="isStatusDropdownOpen ? 'filter-dropdown-chevron rotated' : 'filter-dropdown-chevron'">
+        </app-icon>
+      </button>
+      <div class="filter-dropdown-panel" [class.open]="isStatusDropdownOpen">
+        <button
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="filterStatus === ''"
+          (click)="selectStatus('')">
+          <span>All Status</span>
+          <app-icon
+            *ngIf="filterStatus === ''"
+            name="check-circle"
+            size="16"
+            fill="white">
+          </app-icon>
+        </button>
+        <button
+          *ngFor="let status of ratePlanStatuses"
+          type="button"
+          class="filter-dropdown-option"
+          [class.selected]="filterStatus === status"
+          (click)="selectStatus(status)">
+          <span>{{ getStatusLabel(status) }}</span>
+          <app-icon
+            *ngIf="filterStatus === status"
+            name="check-circle"
+            size="16"
+            fill="white">
+          </app-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="rate-plans-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Short Name</th>
+          <th>Status</th>
+          <th>Type</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ratePlan of ratePlans">
+          <td>
+            <div class="rate-plan-name-cell">
+              <div class="rate-plan-icon-wrapper">
+                <app-icon name="tag" size="20" fill="#14b8a6"></app-icon>
+              </div>
+              <div class="rate-plan-name">{{ ratePlan.name }}</div>
+            </div>
+          </td>
+          <td>{{ ratePlan.shortName }}</td>
+          <td>
+            <span class="status-badge" [class.active]="ratePlan.status === 'ACTIVE'" [class.inactive]="ratePlan.status === 'INACTIVE'">
+              {{ getStatusLabel(ratePlan.status) }}
+            </span>
+          </td>
+          <td>{{ getTypeLabel(ratePlan.type) }}</td>
+          <td>{{ formatDate(ratePlan.startDate) }}</td>
+          <td>{{ formatDate(ratePlan.endDate) }}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon" (click)="openViewModal(ratePlan)" aria-label="View">
+                <app-icon name="eye" size="16"></app-icon>
+              </button>
+              <button class="btn-icon" (click)="openEditModal(ratePlan)" aria-label="Edit">
+                <app-icon name="pencil" size="16"></app-icon>
+              </button>
+              <button class="btn-icon btn-icon-delete" (click)="openDeleteModal(ratePlan)" aria-label="Delete">
+                <app-icon name="trash" size="16"></app-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === 1"
+      (click)="previousPage()"
+      [disabled]="currentPage === 1">
+      < Previous
+    </button>
+    <div class="pagination-pages">
+      <button
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        class="pagination-page"
+        [class.active]="currentPage === (i + 1)"
+        (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </div>
+    <button
+      class="pagination-btn"
+      [class.disabled]="currentPage === totalPages"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages">
+      Next >
+    </button>
+  </div>
+
+  <!-- Main Modal -->
+  <app-modal
+    [isOpen]="isModalOpen"
+    [title]="modalTitle"
+    [size]="'md'"
+    (close)="closeModal()">
+    <div *ngIf="selectedRatePlan" class="modal-form">
+      <div class="form-group">
+        <label>Name <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="selectedRatePlan!.name"
+          [readonly]="!isEditMode && modalTitle === 'Rate Plan Details'"
+          [disabled]="!isEditMode && modalTitle === 'Rate Plan Details'"
+          [required]="isEditMode"
+          class="form-input"
+          placeholder="Enter rate plan name">
+      </div>
+
+      <div class="form-group">
+        <label>Short Name <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="selectedRatePlan!.shortName"
+          [readonly]="!isEditMode && modalTitle === 'Rate Plan Details'"
+          [disabled]="!isEditMode && modalTitle === 'Rate Plan Details'"
+          [required]="isEditMode"
+          class="form-input"
+          placeholder="Enter short name">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status <span class="required">*</span></label>
+          <select
+            [(ngModel)]="selectedRatePlan!.status"
+            [disabled]="!isEditMode && modalTitle === 'Rate Plan Details'"
+            class="custom-select">
+            <option *ngFor="let status of ratePlanStatuses" [ngValue]="status">
+              {{ getStatusLabel(status) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Type <span class="required">*</span></label>
+          <select
+            [(ngModel)]="selectedRatePlan!.type"
+            [disabled]="!isEditMode && modalTitle === 'Rate Plan Details'"
+            class="custom-select">
+            <option *ngFor="let type of ratePlanTypes" [ngValue]="type">
+              {{ getTypeLabel(type) }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date <span class="required">*</span></label>
+          <input
+            type="date"
+            [value]="getDateString(selectedRatePlan!.startDate)"
+            (input)="onStartDateChange($event)"
+            [readonly]="!isEditMode && modalTitle === 'Rate Plan Details'"
+            [disabled]="!isEditMode && modalTitle === 'Rate Plan Details'"
+            [required]="isEditMode"
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>End Date</label>
+          <input
+            type="date"
+            [value]="getDateString(selectedRatePlan!.endDate)"
+            (input)="onEndDateChange($event)"
+            [readonly]="!isEditMode && modalTitle === 'Rate Plan Details'"
+            [disabled]="!isEditMode && modalTitle === 'Rate Plan Details'"
+            class="form-input">
+        </div>
+      </div>
+
+      <!-- Currency (only in modals) -->
+      <div class="form-group">
+        <label>Currency</label>
+        <select
+          [(ngModel)]="selectedRatePlan!.currency"
+          [disabled]="!isEditMode && modalTitle === 'Rate Plan Details'"
+          class="custom-select"
+          [compareWith]="compareCurrencies">
+          <option [ngValue]="null">Select Currency</option>
+          <option *ngFor="let currency of allCurrencies" [ngValue]="currency">
+            {{ currency.name }} ({{ currency.shortName }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Extra Services (only in modals) -->
+      <div class="form-group" *ngIf="isEditMode || modalTitle === 'Rate Plan Details'">
+        <label>Extra Services</label>
+        <div class="multi-select-wrapper" #extraServicesDropdown>
+          <div
+            class="multi-select-trigger"
+            (click)="toggleExtraServicesDropdown()"
+            [class.open]="isExtraServicesDropdownOpen">
+            <span class="multi-select-placeholder">
+              {{ getSelectedExtraServicesLabel() }}
+            </span>
+            <app-icon
+              name="chevron-down"
+              size="16"
+              [className]="isExtraServicesDropdownOpen ? 'multi-select-chevron rotated' : 'multi-select-chevron'">
+            </app-icon>
+          </div>
+          <div class="multi-select-dropdown" [class.open]="isExtraServicesDropdownOpen">
+            <div class="multi-select-search">
+              <app-icon name="search" size="16" fill="#6b7280"></app-icon>
+              <input
+                type="text"
+                class="multi-select-search-input"
+                placeholder="Search extra services..."
+                [(ngModel)]="extraServicesSearchQuery"
+                (click)="$event.stopPropagation()"
+                (focus)="isExtraServicesDropdownOpen = true">
+            </div>
+            <div class="multi-select-options">
+              <div
+                *ngFor="let service of getFilteredExtraServices()"
+                class="multi-select-option"
+                [class.selected]="isExtraServiceSelected(service)"
+                (click)="toggleExtraService(service)">
+                <div class="multi-select-option-content">
+                  <input
+                    type="checkbox"
+                    [checked]="isExtraServiceSelected(service)"
+                    (change)="toggleExtraService(service)"
+                    (click)="$event.stopPropagation()"
+                    class="multi-select-checkbox">
+                  <span class="multi-select-option-label">{{ service.name }}</span>
+                </div>
+                <app-icon
+                  *ngIf="isExtraServiceSelected(service)"
+                  name="check-circle"
+                  size="16"
+                  fill="#14b8a6">
+                </app-icon>
+              </div>
+              <div *ngIf="getFilteredExtraServices().length === 0" class="multi-select-no-results">
+                No extra services found
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cancellation Policies (only in modals) -->
+      <div class="form-row" *ngIf="isEditMode || modalTitle === 'Rate Plan Details'">
+        <div class="form-group">
+          <label>Early Cancellation Policy</label>
+          <div class="policy-input-wrapper">
+            <input
+              type="text"
+              [value]="getCancellationPolicyLabel(selectedRatePlan!.earlyCancellationPolicy)"
+              readonly
+              class="form-input"
+              [style.cursor]="selectedRatePlan!.earlyCancellationPolicy ? 'pointer' : 'default'"
+              (click)="selectedRatePlan!.earlyCancellationPolicy && openCancellationPolicyModal('early', !isEditMode)">
+            <button
+              *ngIf="isEditMode"
+              type="button"
+              class="btn-policy-edit"
+              (click)="openCancellationPolicyModal('early', false)">
+              <app-icon name="pencil" size="14"></app-icon>
+            </button>
+            <button
+              *ngIf="!isEditMode && selectedRatePlan!.earlyCancellationPolicy"
+              type="button"
+              class="btn-policy-view"
+              (click)="openCancellationPolicyModal('early', true)">
+              <app-icon name="eye" size="14"></app-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Late Cancellation Policy</label>
+          <div class="policy-input-wrapper">
+            <input
+              type="text"
+              [value]="getCancellationPolicyLabel(selectedRatePlan!.lateCancellationPolicy)"
+              readonly
+              class="form-input"
+              [style.cursor]="selectedRatePlan!.lateCancellationPolicy ? 'pointer' : 'default'"
+              (click)="selectedRatePlan!.lateCancellationPolicy && openCancellationPolicyModal('late', !isEditMode)">
+            <button
+              *ngIf="isEditMode"
+              type="button"
+              class="btn-policy-edit"
+              (click)="openCancellationPolicyModal('late', false)">
+              <app-icon name="pencil" size="14"></app-icon>
+            </button>
+            <button
+              *ngIf="!isEditMode && selectedRatePlan!.lateCancellationPolicy"
+              type="button"
+              class="btn-policy-view"
+              (click)="openCancellationPolicyModal('late', true)">
+              <app-icon name="eye" size="14"></app-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="isEditMode || modalTitle === 'Rate Plan Details'" class="form-actions">
+        <button *ngIf="isEditMode" class="btn-primary" (click)="saveRatePlan()">Save</button>
+        <button class="btn-secondary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Cancellation Policy Sub-Modal -->
+  <app-modal
+    [isOpen]="isCancellationPolicyModalOpen"
+    [title]="(cancellationPolicyType === 'early' ? 'Early' : 'Late') + ' Cancellation Policy' + (isCancellationPolicyViewMode ? ' Details' : '')"
+    [size]="'sm'"
+    (close)="closeCancellationPolicyModal()">
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Policy Name</label>
+        <input
+          type="text"
+          [(ngModel)]="cancellationPolicyForm.name"
+          [readonly]="isCancellationPolicyViewMode"
+          [disabled]="isCancellationPolicyViewMode"
+          class="form-input"
+          placeholder="Enter policy name">
+      </div>
+
+      <div class="form-group">
+        <label>Charge Type</label>
+        <select
+          [(ngModel)]="cancellationPolicyForm.chargeType"
+          [disabled]="isCancellationPolicyViewMode"
+          class="custom-select">
+          <option *ngFor="let chargeType of cancellationPolicyChargeTypes" [ngValue]="chargeType">
+            {{ getChargeTypeLabel(chargeType) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Rate</label>
+        <input
+          type="number"
+          [(ngModel)]="cancellationPolicyForm.rate"
+          [readonly]="isCancellationPolicyViewMode"
+          [disabled]="isCancellationPolicyViewMode"
+          class="form-input"
+          placeholder="Enter rate"
+          step="0.01"
+          min="0">
+      </div>
+
+      <div class="form-actions" *ngIf="!isCancellationPolicyViewMode">
+        <button class="btn-primary" (click)="saveCancellationPolicy()">Save</button>
+        <button class="btn-secondary" (click)="closeCancellationPolicyModal()">Cancel</button>
+      </div>
+      <div class="form-actions" *ngIf="isCancellationPolicyViewMode">
+        <button class="btn-secondary" (click)="closeCancellationPolicyModal()">Close</button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Delete Confirmation Modal -->
+  <app-modal
+    [isOpen]="isDeleteModalOpen"
+    title="Delete Rate Plan"
+    [size]="'sm'"
+    (close)="closeDeleteModal()">
+    <div class="delete-modal-content">
+      <p class="delete-message">Are you sure you want to delete this rate plan?</p>
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn-danger" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </app-modal>
+</div>

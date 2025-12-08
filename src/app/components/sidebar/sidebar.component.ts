@@ -33,6 +33,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
     { label: 'Reservations', route: '/reservations', icon: 'calendar' },
     { label: 'Calendar', route: '/calendar', icon: 'calendar' },
+    { label: 'Rate Plans', route: '/rate-plans', icon: 'tag' },
     { label: 'Guests', route: '/guests', icon: 'users' },
   ];
 
