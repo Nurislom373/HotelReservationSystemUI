@@ -22,6 +22,11 @@ export class UserService extends AbstractService<UserModel, number> {
     return this.httpClient.post(url, changePassword, {observe: 'response'})
   }
 
+  public getCurrentUserAccount(): Observable<HttpResponse<UserModel>> {
+    let url = super.getEndpointByBaseURL("api/account");
+    return this.httpClient.get<UserModel>(url, {observe: 'response'});
+  }
+
   override getByQueryPagination(queryCriteria: QueryCriteria): Observable<HttpResponse<UserModel[]>> {
     let url = this.filterService.filterModelJoinUrl(this.getEndpoint() + "/read-only", queryCriteria.filterModels!);
     let paginationUrl = this.joinPagination(url, queryCriteria.size, queryCriteria.page, queryCriteria.sort);

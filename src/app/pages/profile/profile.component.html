@@ -1,0 +1,130 @@
+<div class="profile-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Profile</h1>
+      <p class="page-subtitle">Manage your profile information</p>
+    </div>
+  </div>
+
+  <div class="profile-card" *ngIf="!isLoading">
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+      <div class="form-group">
+        <label for="login" class="form-label">Login <span class="required">*</span></label>
+        <input
+          id="login"
+          type="text"
+          formControlName="login"
+          class="form-input"
+          [class.error]="profileForm.get('login')?.invalid && profileForm.get('login')?.touched"
+          placeholder="Enter your login">
+        <span *ngIf="profileForm.get('login')?.invalid && profileForm.get('login')?.touched" class="error-message">
+          {{ getFieldError('login') }}
+        </span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName" class="form-label">First Name <span class="required">*</span></label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            class="form-input"
+            [class.error]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
+            placeholder="Enter your first name">
+          <span *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched" class="error-message">
+            {{ getFieldError('firstName') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName" class="form-label">Last Name <span class="required">*</span></label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            class="form-input"
+            [class.error]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
+            placeholder="Enter your last name">
+          <span *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched" class="error-message">
+            {{ getFieldError('lastName') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label">Email <span class="required">*</span></label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input"
+          [class.error]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
+          placeholder="Enter your email address">
+        <span *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="error-message">
+          {{ getFieldError('email') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="phoneNumber" class="form-label">Phone Number <span class="required">*</span></label>
+        <input
+          id="phoneNumber"
+          type="tel"
+          formControlName="phoneNumber"
+          class="form-input"
+          [class.error]="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched"
+          placeholder="Enter your phone number">
+        <span *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched" class="error-message">
+          {{ getFieldError('phoneNumber') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="langKey" class="form-label">Language <span class="required">*</span></label>
+        <select
+          id="langKey"
+          formControlName="langKey"
+          class="custom-select"
+          [class.error]="profileForm.get('langKey')?.invalid && profileForm.get('langKey')?.touched">
+          <option *ngFor="let lang of languageOptions" [value]="lang.value">
+            {{ lang.label }}
+          </option>
+        </select>
+        <span *ngIf="profileForm.get('langKey')?.invalid && profileForm.get('langKey')?.touched" class="error-message">
+          {{ getFieldError('langKey') }}
+        </span>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-alert">
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div *ngIf="successMessage" class="success-alert">
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="isSaving || profileForm.invalid">
+          <span *ngIf="!isSaving">Save Changes</span>
+          <span *ngIf="isSaving">Saving...</span>
+        </button>
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="loadUserProfile()"
+          [disabled]="isSaving">
+          Reset
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+</div>
