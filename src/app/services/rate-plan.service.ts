@@ -22,3 +22,4 @@ export class RatePlanService extends AbstractService<RatePlanModel, number> {
     return 'rateplanms';
   }
 }
+

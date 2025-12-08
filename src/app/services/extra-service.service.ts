@@ -22,3 +22,4 @@ export class ExtraServiceService extends AbstractService<ExtraServiceModel, numb
     return 'rateplanms';
   }
 }
+
