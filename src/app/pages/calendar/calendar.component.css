@@ -61,6 +61,98 @@
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
 }
 
+/* Modal View Details Styles */
+.modal-content-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+
+.detail-value {
+  color: #111827;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  text-align: right;
+}
+
+.room-type-badge {
+  color: #6b7280;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+.status-badge.active {
+  background: #14b8a6;
+  color: white;
+}
+
+.status-badge.new {
+  background: #3b82f6;
+  color: white;
+}
+
+.status-badge.not-active {
+  background: #ef4444;
+  color: white;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
 .calendar-container {
   background: white;
   border-radius: 12px;

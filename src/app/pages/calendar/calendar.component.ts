@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {IconComponent} from '../../components/icons/icons.component';
+import {ModalComponent} from '../../components/modal/modal.component';
 import {RoomTypeService} from '../../services/room-type.service';
 import {RoomService} from '../../services/room.service';
 import {ReservationsService} from '../../services/reservations.service';
@@ -15,7 +16,7 @@ import {FieldType} from '../../services/base/models/filter/field.type';
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, ModalComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
@@ -35,6 +36,10 @@ export class CalendarComponent implements OnInit {
 
   // Color mapping for room types
   roomTypeColors: Map<number, string> = new Map();
+
+  // Modal state
+  isModalOpen = false;
+  selectedReservation: ReservationModel | null = null;
 
   constructor(
     private roomTypeService: RoomTypeService,
@@ -350,5 +355,43 @@ export class CalendarComponent implements OnInit {
 
     // Reservation is visible if it overlaps with the current month
     return checkIn < monthEnd && checkOut > firstDay;
+  }
+
+  // Modal methods
+  openReservationDetails(reservation: ReservationModel) {
+    this.selectedReservation = {...reservation};
+    this.isModalOpen = true;
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
+    this.selectedReservation = null;
+  }
+
+  // Utility methods for formatting
+  formatDate(date: Date | string | undefined): string {
+    if (!date) return 'N/A';
+    const d = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(d.getTime())) return 'N/A';
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  getStatusLabel(status: ReservationStatus | undefined): string {
+    if (!status) return 'N/A';
+    return status.replace(/_/g, ' ');
+  }
+
+  getStatusClass(status: ReservationStatus | undefined): string {
+    if (!status) return '';
+    switch (status) {
+      case ReservationStatus.ACTIVE:
+        return 'status-badge active';
+      case ReservationStatus.NEW:
+        return 'status-badge new';
+      case ReservationStatus.NOT_ACTIVE:
+        return 'status-badge not-active';
+      default:
+        return 'status-badge';
+    }
   }
 }
